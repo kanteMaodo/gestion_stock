@@ -1,4 +1,4 @@
-package org.example.gestionpharmacie.Models;
+package org.example.gestionpharmacie.model;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
