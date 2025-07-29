@@ -282,10 +282,14 @@
                                                     <i class="bi bi-plus-circle"></i>
                                                 </button>
                                                 <button class="btn-action btn-danger" 
-                                                        onclick="supprimerMedicament(<%= med.getId() %>, '<%= med.getNom() %>')"
+                                                        onclick="if(confirm('Supprimer ce médicament ?')) { document.getElementById('formSuppression<%= med.getId() %>').submit(); }"
                                                         title="Supprimer">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
+                                                <form id="formSuppression<%= med.getId() %>" method="post" action="${pageContext.request.contextPath}/medicaments/" style="display: none;">
+                                                    <input type="hidden" name="action" value="supprimer">
+                                                    <input type="hidden" name="id" value="<%= med.getId() %>">
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -307,20 +311,6 @@
         </div>
     </div>
 
-    <!-- Formulaire caché pour la suppression -->
-    <form id="formSuppression" method="post" action="${pageContext.request.contextPath}/medicaments/" style="display: none;">
-        <input type="hidden" name="action" value="supprimer">
-        <input type="hidden" name="id" id="medicamentIdASupprimer">
-    </form>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function supprimerMedicament(id, nom) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer le médicament "' + nom + '" ?')) {
-                document.getElementById('medicamentIdASupprimer').value = id;
-                document.getElementById('formSuppression').submit();
-            }
-        }
-    </script>
 </body>
 </html> 

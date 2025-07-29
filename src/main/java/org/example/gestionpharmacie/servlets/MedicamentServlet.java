@@ -36,8 +36,14 @@ public class MedicamentServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
         
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.equals("")) {
-            // Liste des médicaments
-            handleListeMedicaments(request, response, user);
+            // Vérifier s'il y a des paramètres d'action
+            String action = request.getParameter("action");
+            if ("supprimer".equals(action)) {
+                handleSupprimerMedicament(request, response, user);
+            } else {
+                // Liste des médicaments
+                handleListeMedicaments(request, response, user);
+            }
         } else if (pathInfo.equals("/ajouter")) {
             // Formulaire d'ajout
             handleFormulaireAjout(request, response, user);
@@ -88,7 +94,7 @@ public class MedicamentServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            List<Medicament> medicaments = medicamentDAO.findAll();
+            List<Medicament> medicaments = medicamentDAO.findAllActifs();
             
             request.setAttribute("medicaments", medicaments);
             request.setAttribute("user", user);

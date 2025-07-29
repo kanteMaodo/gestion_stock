@@ -86,4 +86,6 @@ public interface MedicamentDAO extends GenericDAO<Medicament, Long> {
      * Compte le nombre de médicaments qui expirent bientôt
      */
     long countExpirationProche();
+    
+    List<Medicament> findAllActifs();
 } 

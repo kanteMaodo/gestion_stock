@@ -312,4 +312,18 @@ public class MedicamentDAOImpl extends GenericDAOImpl<Medicament, Long> implemen
             em.close();
         }
     }
+    
+    @Override
+    public List<Medicament> findAllActifs() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<Medicament> query = em.createQuery(
+                "SELECT m FROM Medicament m WHERE m.actif = true ORDER BY m.nom",
+                Medicament.class
+            );
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
 } 
