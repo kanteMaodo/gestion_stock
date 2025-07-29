@@ -139,17 +139,16 @@
         .notification-badge {
             position: relative;
         }
-        .notification-badge::after {
-            content: '<%= alertesCritiques %>';
+        .sidebar .notification-badge {
+            position: relative;
+        }
+        .sidebar .notification-badge .badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            top: 8px;
+            right: 8px;
             font-size: 0.7em;
+            min-width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -178,15 +177,13 @@
         </a>
         <a href="${pageContext.request.contextPath}/alertes/" class="notification-badge">
             <i class="bi bi-exclamation-triangle me-2"></i> Alertes
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+                <%= alertesCritiques %>
+            </span>
         </a>
-                        <a href="${pageContext.request.contextPath}/logout">
-                    <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
-                </a>
-                <% if (user != null && user.getRole() == org.example.gestionpharmacie.model.Utilisateur.Role.ADMIN) { %>
-                <a href="${pageContext.request.contextPath}/admin/clean-database">
-                    <i class="bi bi-trash me-2"></i> Vider Base
-                </a>
-                <% } %>
+        <a href="${pageContext.request.contextPath}/logout">
+            <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+        </a>
     </div>
 
     <!-- Main Content -->
@@ -198,9 +195,12 @@
                 <p class="text-muted mb-0">Gestion des médicaments et stocks</p>
             </div>
             <div class="user-info">
-                <div class="notification-badge">
+                <a href="${pageContext.request.contextPath}/alertes/" class="notification-badge position-relative text-decoration-none">
                     <i class="bi bi-bell fs-4"></i>
-                </div>
+                    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+                        <%= alertesCritiques %>
+                    </span>
+                </a>
                 <div class="text-end">
                     <div class="fw-bold"><%= user != null ? user.getNomComplet() : "" %></div>
                     <small class="text-muted"><%= user != null ? user.getRole().getLibelle() : "" %></small>
@@ -274,7 +274,7 @@
             <div class="col-md-3">
                 <div class="card stats-card">
                     <div class="card-body text-center p-4">
-                        <i class="bi bi-currency-dollar fs-1 mb-3"></i>
+                        <i class="bi bi-bar-chart fs-1 mb-3"></i>
                         <h3 class="mb-1"><%= String.format("%.0f", chiffreAffaires) %> FCFA</h3>
                         <p class="mb-0">Chiffre d'Affaires</p>
                     </div>
@@ -313,8 +313,9 @@
                                             <td><%= med.getNom() %></td>
                                             <td><span class="badge bg-danger"><%= med.getStock() %></span></td>
                                             <td>
-                                                <button class="btn-action btn-warning" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/modifier?id=<%= med.getId() %>'">
-                                                    Réapprovisionner
+                                                <!-- Debug: ID = <%= med.getId() %>, Nom = <%= med.getNom() %> -->
+                                                <button class="btn-action btn-warning" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/reapprovisionner?id=<%= med.getId() %>'">
+                                                    Réapprovisionner (ID: <%= med.getId() %>)
                                                 </button>
                                             </td>
                                         </tr>
@@ -322,8 +323,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    <% } else { %>
-                        <p class="text-muted text-center py-3">Aucun médicament en stock faible</p>
                     <% } %>
                 </div>
             </div>
@@ -357,8 +356,8 @@
                                             <td><%= med.getNom() %></td>
                                             <td><span class="badge bg-warning"><%= med.getDateExpiration() != null ? med.getDateExpiration().format(formatter) : "N/A" %></span></td>
                                             <td>
-                                                <button class="btn-action btn-danger" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/modifier?id=<%= med.getId() %>'">
-                                                    Gérer
+                                                <button class="btn-action btn-danger" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/reapprovisionner?id=<%= med.getId() %>'">
+                                                    Gérer (ID: <%= med.getId() %>)
                                                 </button>
                                             </td>
                                         </tr>
@@ -366,8 +365,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    <% } else { %>
-                        <p class="text-muted text-center py-3">Aucun médicament en expiration proche</p>
                     <% } %>
                 </div>
             </div>
@@ -414,8 +411,6 @@
                         </tbody>
                     </table>
                 </div>
-            <% } else { %>
-                <p class="text-muted text-center py-3">Aucune vente récente</p>
             <% } %>
         </div>
     </div>

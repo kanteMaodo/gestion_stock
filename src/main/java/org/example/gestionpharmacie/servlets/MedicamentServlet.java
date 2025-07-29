@@ -309,10 +309,17 @@ public class MedicamentServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            Long medicamentId = Long.parseLong(request.getParameter("id"));
+            String idParam = request.getParameter("id");
+            System.out.println("DEBUG: ID parameter = " + idParam); // Debug
+            
+            Long medicamentId = Long.parseLong(idParam);
+            System.out.println("DEBUG: Parsed ID = " + medicamentId); // Debug
+            
             Medicament medicament = medicamentDAO.findById(medicamentId).orElse(null);
+            System.out.println("DEBUG: Found medicament = " + (medicament != null ? medicament.getNom() : "null")); // Debug
             
             if (medicament == null) {
+                System.out.println("DEBUG: Medicament not found, redirecting to list"); // Debug
                 response.sendRedirect(request.getContextPath() + "/medicaments/");
                 return;
             }
@@ -322,6 +329,8 @@ public class MedicamentServlet extends HttpServlet {
             request.getRequestDispatcher("/views/medicaments/reapprovisionner.jsp").forward(request, response);
             
         } catch (Exception e) {
+            System.out.println("DEBUG: Exception in handleFormulaireReapprovisionner: " + e.getMessage()); // Debug
+            e.printStackTrace(); // Debug
             response.sendRedirect(request.getContextPath() + "/medicaments/");
         }
     }

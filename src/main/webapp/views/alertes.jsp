@@ -71,54 +71,24 @@
 </head>
 <body>
     <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse" style="min-height: 100vh;">
-                <div class="position-sticky pt-3">
-                    <div class="text-center mb-4">
-                        <h4 class="text-white">🏥 Pharmacie</h4>
-                        <small class="text-muted">Centre-ville Dakar</small>
+        <!-- Main content -->
+        <div class="px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-exclamation-triangle text-warning"></i>
+                    Alertes Médicaments
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <span class="badge bg-danger fs-6">
+                            <%= alertes.get("totalAlertes") %> Alertes
+                        </span>
                     </div>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="${pageContext.request.contextPath}/dashboard">
-                                <i class="bi bi-speedometer2"></i> Tableau de bord
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="${pageContext.request.contextPath}/medicaments/">
-                                <i class="bi bi-capsule"></i> Médicaments
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white active" href="${pageContext.request.contextPath}/alertes/">
-                                <i class="bi bi-exclamation-triangle"></i> Alertes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="${pageContext.request.contextPath}/logout">
-                                <i class="bi bi-box-arrow-right"></i> Déconnexion
-                            </a>
-                        </li>
-                    </ul>
+                    <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-2"></i>Retour au Dashboard
+                    </a>
                 </div>
             </div>
-
-            <!-- Main content -->
-            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">
-                        <i class="bi bi-exclamation-triangle text-warning"></i>
-                        Alertes Médicaments
-                    </h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2">
-                            <span class="badge bg-danger fs-6">
-                                <%= alertes.get("totalAlertes") %> Alertes
-                            </span>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Statistiques -->
                 <div class="row mb-4">
@@ -198,11 +168,6 @@
                                                                     onclick="window.location.href='${pageContext.request.contextPath}/medicaments/reapprovisionner?id=<%= med.getId() %>'"
                                                                     title="Réapprovisionner">
                                                                 <i class="bi bi-plus-circle"></i>
-                                                            </button>
-                                                            <button class="btn-action btn-primary" 
-                                                                    onclick="window.location.href='${pageContext.request.contextPath}/medicaments/modifier?id=<%= med.getId() %>'"
-                                                                    title="Modifier">
-                                                                <i class="bi bi-pencil"></i>
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -286,11 +251,6 @@
                                                                     title="Réapprovisionner">
                                                                 <i class="bi bi-plus-circle"></i>
                                                             </button>
-                                                            <button class="btn-action btn-primary" 
-                                                                    onclick="window.location.href='${pageContext.request.contextPath}/medicaments/modifier?id=<%= med.getId() %>'"
-                                                                    title="Modifier">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </button>
                                                         </td>
                                                     </tr>
                                                 <% } %>
@@ -310,7 +270,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
