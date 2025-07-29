@@ -182,15 +182,18 @@
                     <a class="nav-link" href="#">
                         <i class="fas fa-users me-2"></i> Utilisateurs
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/medicaments/">
                         <i class="fas fa-pills me-2"></i> Médicaments
                     </a>
                     <a class="nav-link" href="#">
                         <i class="fas fa-chart-line me-2"></i> Ventes
                     </a>
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-cog me-2"></i> Paramètres
-                    </a>
+                                            <a class="nav-link" href="#">
+                            <i class="fas fa-cog me-2"></i> Paramètres
+                        </a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/test-data">
+                            <i class="fas fa-database me-2"></i> Données de test
+                        </a>
                     <a class="nav-link" href="logout">
                         <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
                     </a>

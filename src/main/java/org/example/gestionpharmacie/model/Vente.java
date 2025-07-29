@@ -115,9 +115,9 @@ public class Vente implements Serializable {
     }
 
     public void annuler() {
-        if (this.peutEtreAnnulee()) {
+        if (peutEtreAnnulee()) {
             this.statut = StatutVente.ANNULEE;
-            // Restaurer les stocks
+            // Restaurer le stock
             this.lignesVente.forEach(ligne -> 
                 ligne.getMedicament().incrementerStock(ligne.getQuantite()));
         }
@@ -196,7 +196,6 @@ public class Vente implements Serializable {
         this.dateModification = dateModification;
     }
 
-    // equals et hashCode
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -210,12 +209,10 @@ public class Vente implements Serializable {
         return Objects.hash(id);
     }
 
-    // toString
     @Override
     public String toString() {
         return "Vente{" +
                 "id=" + id +
-                ", vendeur=" + (vendeur != null ? vendeur.getNomComplet() : "null") +
                 ", montantTotal=" + montantTotal +
                 ", dateVente=" + dateVente +
                 ", statut=" + statut +

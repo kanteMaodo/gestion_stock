@@ -6,17 +6,17 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 
-/**
- * Servlet pour gérer la déconnexion des utilisateurs
- */
-@WebServlet(name = "logoutServlet", value = "/logout")
+@WebServlet("/logout")
 public class LogoutServlet extends HttpServlet {
-
+    
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(false);
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession(false);
         
         if (session != null) {
             // Invalider la session
@@ -24,11 +24,12 @@ public class LogoutServlet extends HttpServlet {
         }
         
         // Rediriger vers la page d'accueil
-        resp.sendRedirect(req.getContextPath() + "/");
+        response.sendRedirect(request.getContextPath() + "/");
     }
-
+    
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doGet(req, resp);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        doGet(request, response);
     }
 } 

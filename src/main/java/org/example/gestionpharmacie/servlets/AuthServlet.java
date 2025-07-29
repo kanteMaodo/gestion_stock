@@ -1,21 +1,18 @@
 package org.example.gestionpharmacie.servlets;
 
-import jakarta.persistence.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import org.example.gestionpharmacie.dao.UtilisateurDAO;
+import org.example.gestionpharmacie.dao.UtilisateurDAOImpl;
 import org.example.gestionpharmacie.model.Utilisateur;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet(name = "authServlet", value = "/auth")
 public class AuthServlet extends HttpServlet {
-    private EntityManagerFactory emf;
-
-    @Override
-    public void init() {
-        emf = Persistence.createEntityManagerFactory("PharmaPU");
-    }
+    private final UtilisateurDAO utilisateurDAO = new UtilisateurDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -37,87 +34,67 @@ public class AuthServlet extends HttpServlet {
     private void handleLogin(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String email = req.getParameter("email");
         String motDePasse = req.getParameter("motDePasse");
-        EntityManager em = emf.createEntityManager();
+        
         try {
-            TypedQuery<Utilisateur> query = em.createQuery(
-                    "SELECT u FROM Utilisateur u WHERE u.email = :email AND u.motDePasse = :motDePasse", Utilisateur.class);
-            query.setParameter("email", email);
-            query.setParameter("motDePasse", motDePasse);
-            Utilisateur utilisateur = query.getResultStream().findFirst().orElse(null);
-            if (utilisateur != null && utilisateur.isActif()) {
+            Optional<Utilisateur> utilisateurOpt = utilisateurDAO.authenticate(email, motDePasse);
+            
+            if (utilisateurOpt.isPresent()) {
+                Utilisateur utilisateur = utilisateurOpt.get();
                 HttpSession session = req.getSession();
                 session.setAttribute("utilisateur", utilisateur);
                 
                 // Mettre à jour la dernière connexion
                 utilisateur.updateDerniereConnexion();
-                em.getTransaction().begin();
-                em.merge(utilisateur);
-                em.getTransaction().commit();
+                utilisateurDAO.save(utilisateur);
                 
-                // Redirection selon le rôle
-                switch (utilisateur.getRole()) {
-                    case ADMIN:
-                        resp.sendRedirect("admin/dashboard");
-                        break;
-                    case PHARMACIEN:
-                        resp.sendRedirect("pharmacien/dashboard");
-                        break;
-                    case ASSISTANT:
-                        resp.sendRedirect("assistant/dashboard");
-                        break;
-                    default:
-                        resp.sendRedirect("dashboard");
-                        break;
-                }
+                // Rediriger vers le dashboard unifié
+                resp.sendRedirect(req.getContextPath() + "/dashboard");
             } else {
                 req.setAttribute("loginError", "Email ou mot de passe incorrect !");
                 req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
             }
-        } finally {
-            em.close();
+        } catch (Exception e) {
+            req.setAttribute("loginError", "Erreur lors de la connexion : " + e.getMessage());
+            req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
         }
     }
 
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String nom = req.getParameter("nom");
-        String prenom = req.getParameter("prenom");
+        String nomPrenom = req.getParameter("nomPrenom");
         String email = req.getParameter("email");
-        String login = req.getParameter("login");
         String motDePasse = req.getParameter("motDePasse");
         String roleStr = req.getParameter("role");
-        EntityManager em = emf.createEntityManager();
+        
+        // Séparation du champ "Nom et Prénom"
+        String nom = "";
+        String prenom = "";
+        if (nomPrenom != null && !nomPrenom.trim().isEmpty()) {
+            String[] parts = nomPrenom.trim().split("\\s+", 2);
+            nom = parts[0];
+            if (parts.length > 1) {
+                prenom = parts[1];
+            }
+        }
+        
         try {
-            // Vérifier si le login ou l'email existe déjà
-            TypedQuery<Long> query = em.createQuery(
-                    "SELECT COUNT(u) FROM Utilisateur u WHERE u.login = :login OR u.email = :email", Long.class);
-            query.setParameter("login", login);
-            query.setParameter("email", email);
-            Long count = query.getSingleResult();
-            if (count > 0) {
-                req.setAttribute("registerError", "Login ou email déjà utilisé !");
+            // Vérifier si l'email existe déjà
+            if (utilisateurDAO.emailExists(email)) {
+                req.setAttribute("registerError", "Email déjà utilisé !");
                 req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
                 return;
             }
+            
             // Créer et enregistrer l'utilisateur
-            em.getTransaction().begin();
             Utilisateur utilisateur = new Utilisateur(
-                    nom, prenom, email, login, motDePasse, Utilisateur.Role.valueOf(roleStr)
+                    nom, prenom, email, email, motDePasse, Utilisateur.Role.valueOf(roleStr)
             );
-            em.persist(utilisateur);
-            em.getTransaction().commit();
+            utilisateurDAO.save(utilisateur);
+            
             req.setAttribute("registerSuccess", "Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
             req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) em.getTransaction().rollback();
             req.setAttribute("registerError", "Erreur lors de la création du compte : " + e.getMessage());
             req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
-        } finally {
-            em.close();
         }
-    }
-
-    @Override
-    public void destroy() {
-        if (emf != null) emf.close();
     }
 }
