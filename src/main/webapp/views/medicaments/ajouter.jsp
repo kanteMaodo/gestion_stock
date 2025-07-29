@@ -304,11 +304,11 @@
                                 </h5>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
-                                        <label for="prix" class="form-label required">Prix unitaire (€)</label>
+                                        <label for="prix" class="form-label required">Prix unitaire (FCFA)</label>
                                         <div class="input-group">
                                             <input type="number" class="form-control" id="prix" name="prix" 
                                                    step="0.01" min="0" required placeholder="0.00">
-                                            <span class="input-group-text">€</span>
+                                            <span class="input-group-text">FCFA</span>
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-3">
@@ -456,7 +456,7 @@
                                 '<strong>Code-barres:</strong> ' + (data.codeBarre || 'Non spécifié') +
                             '</div>' +
                             '<div class="col-md-6">' +
-                                '<strong>Prix:</strong> ' + (data.prix ? data.prix + '€' : 'Non spécifié') + '<br>' +
+                                '<strong>Prix:</strong> ' + (data.prix ? data.prix + ' FCFA' : 'Non spécifié') + '<br>' +
                                 '<strong>Stock:</strong> ' + (data.stock || 'Non spécifié') + '<br>' +
                                 '<strong>Seuil d\'alerte:</strong> ' + (data.seuilAlerte || 'Non spécifié') +
                             '</div>' +

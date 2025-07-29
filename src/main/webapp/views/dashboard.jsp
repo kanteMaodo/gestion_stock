@@ -179,9 +179,14 @@
         <a href="${pageContext.request.contextPath}/alertes/" class="notification-badge">
             <i class="bi bi-exclamation-triangle me-2"></i> Alertes
         </a>
-        <a href="${pageContext.request.contextPath}/logout">
-            <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
-        </a>
+                        <a href="${pageContext.request.contextPath}/logout">
+                    <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+                </a>
+                <% if (user != null && user.getRole() == org.example.gestionpharmacie.model.Utilisateur.Role.ADMIN) { %>
+                <a href="${pageContext.request.contextPath}/admin/clean-database">
+                    <i class="bi bi-trash me-2"></i> Vider Base
+                </a>
+                <% } %>
     </div>
 
     <!-- Main Content -->

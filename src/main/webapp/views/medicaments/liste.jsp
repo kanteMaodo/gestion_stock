@@ -13,7 +13,6 @@
     List<Medicament> medicaments = (List<Medicament>) request.getAttribute("medicaments");
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 %>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -243,7 +242,7 @@
                                         </td>
                                         <td><%= med.getFabricant() != null ? med.getFabricant() : "Non spécifié" %></td>
                                         <td>
-                                            <strong><%= med.getPrix() != null ? String.format("%.2f", med.getPrix()) : "0.00" %> €</strong>
+                                            <strong><%= med.getPrix() != null ? String.format("%.0f", med.getPrix()) : "0" %> FCFA</strong>
                                         </td>
                                         <td>
                                             <% if (med.getStock() <= med.getSeuilAlerte()) { %>
@@ -278,12 +277,12 @@
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
                                                 <button class="btn-action btn-warning" 
-                                                        onclick="window.location.href='${pageContext.request.contextPath}/medicaments/ajouter?action=reapprovisionner&id=<%= med.getId() %>'"
+                                                        onclick="window.location.href='${pageContext.request.contextPath}/medicaments/reapprovisionner?id=<%= med.getId() %>'"
                                                         title="Réapprovisionner">
                                                     <i class="bi bi-plus-circle"></i>
                                                 </button>
                                                 <button class="btn-action btn-danger" 
-                                                        onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce médicament ?')) { window.location.href='${pageContext.request.contextPath}/medicaments/?action=supprimer&id=<%= med.getId() %>' }"
+                                                        onclick="supprimerMedicament(<%= med.getId() %>, '<%= med.getNom() %>')"
                                                         title="Supprimer">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -308,6 +307,20 @@
         </div>
     </div>
 
+    <!-- Formulaire caché pour la suppression -->
+    <form id="formSuppression" method="post" action="${pageContext.request.contextPath}/medicaments/" style="display: none;">
+        <input type="hidden" name="action" value="supprimer">
+        <input type="hidden" name="id" id="medicamentIdASupprimer">
+    </form>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function supprimerMedicament(id, nom) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer le médicament "' + nom + '" ?')) {
+                document.getElementById('medicamentIdASupprimer').value = id;
+                document.getElementById('formSuppression').submit();
+            }
+        }
+    </script>
 </body>
 </html> 

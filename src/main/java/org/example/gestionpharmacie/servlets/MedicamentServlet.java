@@ -44,6 +44,9 @@ public class MedicamentServlet extends HttpServlet {
         } else if (pathInfo.equals("/modifier")) {
             // Formulaire de modification
             handleFormulaireModifier(request, response, user);
+        } else if (pathInfo.equals("/reapprovisionner")) {
+            // Formulaire de réapprovisionnement
+            handleFormulaireReapprovisionner(request, response, user);
         } else if (pathInfo.startsWith("/api/")) {
             // Requêtes API
             handleApiRequest(request, response, user);
@@ -74,6 +77,8 @@ public class MedicamentServlet extends HttpServlet {
             handleSupprimerMedicament(request, response, user);
         } else if ("rechercher".equals(action)) {
             handleRechercheMedicaments(request, response, user);
+        } else if ("reapprovisionner".equals(action)) {
+            handleReapprovisionner(request, response, user);
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
@@ -291,6 +296,60 @@ public class MedicamentServlet extends HttpServlet {
             
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+    
+    private void handleFormulaireReapprovisionner(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+            throws ServletException, IOException {
+        
+        try {
+            Long medicamentId = Long.parseLong(request.getParameter("id"));
+            Medicament medicament = medicamentDAO.findById(medicamentId).orElse(null);
+            
+            if (medicament == null) {
+                response.sendRedirect(request.getContextPath() + "/medicaments/");
+                return;
+            }
+            
+            request.setAttribute("medicament", medicament);
+            request.setAttribute("user", user);
+            request.getRequestDispatcher("/views/medicaments/reapprovisionner.jsp").forward(request, response);
+            
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/medicaments/");
+        }
+    }
+    
+    private void handleReapprovisionner(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+            throws ServletException, IOException {
+        
+        try {
+            Long medicamentId = Long.parseLong(request.getParameter("id"));
+            int quantite = Integer.parseInt(request.getParameter("quantite"));
+            
+            if (quantite <= 0) {
+                response.sendRedirect(request.getContextPath() + "/medicaments/");
+                return;
+            }
+            
+            Medicament medicament = medicamentDAO.findById(medicamentId).orElse(null);
+            if (medicament == null) {
+                response.sendRedirect(request.getContextPath() + "/medicaments/");
+                return;
+            }
+            
+            // Mettre à jour le stock
+            int nouveauStock = medicament.getStock() + quantite;
+            medicament.setStock(nouveauStock);
+            
+            // Sauvegarder
+            medicamentDAO.save(medicament);
+            
+            // Rediriger avec succès
+            response.sendRedirect(request.getContextPath() + "/medicaments/");
+            
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/medicaments/");
         }
     }
 } 
