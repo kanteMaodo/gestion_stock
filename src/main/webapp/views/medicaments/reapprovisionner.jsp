@@ -186,6 +186,9 @@
             <form action="${pageContext.request.contextPath}/medicaments/" method="post" id="formReapprovisionnement">
                 <input type="hidden" name="action" value="reapprovisionner">
                 <input type="hidden" name="id" value="<%= medicament.getId() %>">
+                <% if (request.getParameter("retour") != null) { %>
+                    <input type="hidden" name="retour" value="<%= request.getParameter("retour") %>">
+                <% } %>
                 
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -210,9 +213,9 @@
 
                 <!-- Actions -->
                 <div class="d-flex justify-content-between mt-4">
-                    <a href="${pageContext.request.contextPath}/medicaments/" class="btn btn-secondary btn-action">
+                    <button type="button" onclick="annuler()" class="btn btn-secondary btn-action">
                         <i class="bi bi-arrow-left me-2"></i>Annuler
-                    </a>
+                    </button>
                     <button type="submit" class="btn btn-success btn-action">
                         <i class="bi bi-plus-circle me-2"></i>Réapprovisionner
                     </button>
@@ -261,6 +264,16 @@
                 }
             }
         });
+        
+        // Fonction pour gérer le bouton Annuler
+        function annuler() {
+            const retour = '<%= request.getParameter("retour") %>';
+            if (retour === 'alertes') {
+                window.location.href = '${pageContext.request.contextPath}/alertes/';
+            } else {
+                window.location.href = '${pageContext.request.contextPath}/medicaments/';
+            }
+        }
     </script>
 </body>
 </html> 

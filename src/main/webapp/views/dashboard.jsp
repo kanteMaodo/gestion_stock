@@ -313,9 +313,13 @@
                                             <td><%= med.getNom() %></td>
                                             <td><span class="badge bg-danger"><%= med.getStock() %></span></td>
                                             <td>
-                                                <!-- Debug: ID = <%= med.getId() %>, Nom = <%= med.getNom() %> -->
-                                                <button class="btn-action btn-warning" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/reapprovisionner?id=<%= med.getId() %>'">
-                                                    Réapprovisionner (ID: <%= med.getId() %>)
+                                                <button class="btn-action btn-warning" 
+                                                        data-id="<%= med.getId() %>"
+                                                        data-nom="<%= med.getNom() %>"
+                                                        data-stock="<%= med.getStock() %>"
+                                                        data-seuil="<%= med.getSeuilAlerte() %>"
+                                                        onclick="ouvrirModalReapprovisionnement(this)">
+                                                    Réapprovisionner
                                                 </button>
                                             </td>
                                         </tr>
@@ -356,8 +360,13 @@
                                             <td><%= med.getNom() %></td>
                                             <td><span class="badge bg-warning"><%= med.getDateExpiration() != null ? med.getDateExpiration().format(formatter) : "N/A" %></span></td>
                                             <td>
-                                                <button class="btn-action btn-danger" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/reapprovisionner?id=<%= med.getId() %>'">
-                                                    Gérer (ID: <%= med.getId() %>)
+                                                <button class="btn-action btn-danger" 
+                                                        data-id="<%= med.getId() %>"
+                                                        data-nom="<%= med.getNom() %>"
+                                                        data-stock="<%= med.getStock() %>"
+                                                        data-seuil="<%= med.getSeuilAlerte() %>"
+                                                        onclick="ouvrirModalReapprovisionnement(this)">
+                                                    Réapprovisionner
                                                 </button>
                                             </td>
                                         </tr>
@@ -415,6 +424,149 @@
         </div>
     </div>
 
+    <!-- Modal de Réapprovisionnement Rapide -->
+    <div class="modal fade" id="modalReapprovisionnement" tabindex="-1" aria-labelledby="modalReapprovisionnementLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalReapprovisionnementLabel">
+                        <i class="bi bi-plus-circle me-2"></i>Réapprovisionnement Rapide
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formReapprovisionnementRapide">
+                        <input type="hidden" id="medicamentId" name="id">
+                        <input type="hidden" name="action" value="reapprovisionner">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Médicament</label>
+                            <input type="text" class="form-control" id="medicamentNom" readonly>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Stock actuel</label>
+                                    <input type="number" class="form-control" id="stockActuel" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Seuil d'alerte</label>
+                                    <input type="number" class="form-control" id="seuilAlerte" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="quantite" class="form-label">Quantité à ajouter</label>
+                            <input type="number" class="form-control" id="quantite" name="quantite" min="1" required>
+                            <div class="form-text">Entrez le nombre d'unités à ajouter</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nouveau stock (calculé automatiquement)</label>
+                            <input type="number" class="form-control" id="nouveauStock" readonly>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-success" onclick="reapprovisionnerRapide()">
+                        <i class="bi bi-plus-circle me-2"></i>Réapprovisionner
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables globales
+        let modalReapprovisionnement;
+        
+        // Initialiser le modal au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            modalReapprovisionnement = new bootstrap.Modal(document.getElementById('modalReapprovisionnement'));
+        });
+        
+        // Fonction pour ouvrir le modal de réapprovisionnement
+        function ouvrirModalReapprovisionnement(button) {
+            try {
+                const id = button.getAttribute('data-id');
+                const nom = button.getAttribute('data-nom');
+                const stock = button.getAttribute('data-stock');
+                const seuil = button.getAttribute('data-seuil');
+                
+                console.log('Données récupérées:', { id, nom, stock, seuil });
+                
+                document.getElementById('medicamentId').value = id;
+                document.getElementById('medicamentNom').value = nom;
+                document.getElementById('stockActuel').value = stock;
+                document.getElementById('seuilAlerte').value = seuil;
+                document.getElementById('quantite').value = '';
+                document.getElementById('nouveauStock').value = stock;
+                
+                modalReapprovisionnement.show();
+            } catch (error) {
+                console.error('Erreur dans ouvrirModalReapprovisionnement:', error);
+                alert('Erreur lors de l\'ouverture du modal: ' + error.message);
+            }
+        }
+        
+        // Calcul automatique du nouveau stock
+        document.getElementById('quantite').addEventListener('input', function() {
+            const stockActuel = parseInt(document.getElementById('stockActuel').value) || 0;
+            const quantiteAjoutee = parseInt(this.value) || 0;
+            const nouveauStock = stockActuel + quantiteAjoutee;
+            
+            document.getElementById('nouveauStock').value = nouveauStock;
+            
+            // Changer la couleur selon le seuil d'alerte
+            const seuilAlerte = parseInt(document.getElementById('seuilAlerte').value) || 0;
+            const stockField = document.getElementById('nouveauStock');
+            
+            if (nouveauStock <= seuilAlerte) {
+                stockField.style.color = '#dc3545';
+                stockField.style.fontWeight = 'bold';
+            } else {
+                stockField.style.color = '#28a745';
+                stockField.style.fontWeight = 'normal';
+            }
+        });
+        
+        // Fonction pour réapprovisionner rapidement
+        function reapprovisionnerRapide() {
+            const form = document.getElementById('formReapprovisionnementRapide');
+            const formData = new FormData(form);
+            
+            // Validation
+            const quantite = parseInt(formData.get('quantite'));
+            if (quantite <= 0) {
+                alert('La quantité doit être supérieure à 0');
+                return;
+            }
+            
+            // Envoyer la requête AJAX
+            fetch('${pageContext.request.contextPath}/medicaments/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Succès - fermer le modal et recharger la page
+                    modalReapprovisionnement.hide();
+                    location.reload();
+                } else {
+                    alert('Erreur lors du réapprovisionnement');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors du réapprovisionnement');
+            });
+        }
+    </script>
 </body>
 </html>

@@ -341,15 +341,24 @@ public class MedicamentServlet extends HttpServlet {
         try {
             Long medicamentId = Long.parseLong(request.getParameter("id"));
             int quantite = Integer.parseInt(request.getParameter("quantite"));
+            String retour = request.getParameter("retour");
             
             if (quantite <= 0) {
-                response.sendRedirect(request.getContextPath() + "/medicaments/");
+                if ("alertes".equals(retour)) {
+                    response.sendRedirect(request.getContextPath() + "/alertes/");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/medicaments/");
+                }
                 return;
             }
             
             Medicament medicament = medicamentDAO.findById(medicamentId).orElse(null);
             if (medicament == null) {
-                response.sendRedirect(request.getContextPath() + "/medicaments/");
+                if ("alertes".equals(retour)) {
+                    response.sendRedirect(request.getContextPath() + "/alertes/");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/medicaments/");
+                }
                 return;
             }
             
@@ -360,11 +369,20 @@ public class MedicamentServlet extends HttpServlet {
             // Sauvegarder
             medicamentDAO.save(medicament);
             
-            // Rediriger avec succès
-            response.sendRedirect(request.getContextPath() + "/medicaments/");
+            // Rediriger avec succès selon la page d'origine
+            if ("alertes".equals(retour)) {
+                response.sendRedirect(request.getContextPath() + "/alertes/?success=Médicament réapprovisionné avec succès");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/medicaments/?success=Médicament réapprovisionné avec succès");
+            }
             
         } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/medicaments/");
+            String retour = request.getParameter("retour");
+            if ("alertes".equals(retour)) {
+                response.sendRedirect(request.getContextPath() + "/alertes/?error=Erreur lors du réapprovisionnement");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/medicaments/?error=Erreur lors du réapprovisionnement");
+            }
         }
     }
 } 
