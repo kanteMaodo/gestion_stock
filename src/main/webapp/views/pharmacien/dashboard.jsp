@@ -148,7 +148,7 @@
             <i class="bi bi-plus-circle me-2"></i> Ajouter Médicament
         </a>
         <a href="${pageContext.request.contextPath}/ventes/">
-            <i class="bi bi-graph-up me-2"></i> Rapports
+            <i class="bi bi-cart me-2"></i> Ventes
         </a>
         <a href="${pageContext.request.contextPath}/alertes/" class="notification-badge">
             <i class="bi bi-exclamation-triangle me-2"></i> Alertes

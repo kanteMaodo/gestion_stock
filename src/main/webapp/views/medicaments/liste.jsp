@@ -65,15 +65,43 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .btn-action {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
+            padding: 8px 14px;
+            border-radius: 25px;
+            font-size: 0.9em;
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
         }
         .btn-action:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        }
+        .btn-action:active {
+            transform: translateY(0) scale(0.98);
+        }
+        .btn-action.btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        .btn-action.btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+        }
+        .btn-action.btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        .btn-action.btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+        }
+        .btn-action i {
+            font-size: 1em;
+            transition: transform 0.3s ease;
+        }
+        .btn-action:hover i {
+            transform: scale(1.1);
         }
         .stock-low {
             color: #dc3545;
@@ -113,7 +141,7 @@
             <i class="bi bi-plus-circle me-2"></i> Ajouter Médicament
         </a>
         <a href="${pageContext.request.contextPath}/ventes/">
-            <i class="bi bi-graph-up me-2"></i> Rapports
+            <i class="bi bi-cart me-2"></i> Ventes
         </a>
         <a href="${pageContext.request.contextPath}/alertes/">
             <i class="bi bi-exclamation-triangle me-2"></i> Alertes
@@ -270,21 +298,17 @@
                                             <% } %>
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group">
+                                            <div class="btn-group" role="group" style="gap: 8px;">
                                                 <button class="btn-action btn-primary" 
                                                         onclick="window.location.href='${pageContext.request.contextPath}/medicaments/modifier?id=<%= med.getId() %>'"
-                                                        title="Modifier">
-                                                    <i class="bi bi-pencil"></i>
+                                                        title="Modifier le médicament">
+                                                    <i class="bi bi-pencil-fill"></i>
                                                 </button>
-                                                <button class="btn-action btn-warning" 
-                                                        onclick="window.location.href='${pageContext.request.contextPath}/medicaments/reapprovisionner?id=<%= med.getId() %>'"
-                                                        title="Réapprovisionner">
-                                                    <i class="bi bi-plus-circle"></i>
-                                                </button>
+
                                                 <button class="btn-action btn-danger" 
-                                                        onclick="if(confirm('Supprimer ce médicament ?')) { document.getElementById('formSuppression<%= med.getId() %>').submit(); }"
-                                                        title="Supprimer">
-                                                    <i class="bi bi-trash"></i>
+                                                        onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce médicament ?')) { document.getElementById('formSuppression<%= med.getId() %>').submit(); }"
+                                                        title="Supprimer le médicament">
+                                                    <i class="bi bi-trash-fill"></i>
                                                 </button>
                                                 <form id="formSuppression<%= med.getId() %>" method="post" action="${pageContext.request.contextPath}/medicaments/" style="display: none;">
                                                     <input type="hidden" name="action" value="supprimer">

@@ -16,6 +16,8 @@
     }
     
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+
 %>
 
 <!DOCTYPE html>
@@ -115,7 +117,7 @@
             <i class="bi bi-plus-circle me-2"></i> Ajouter Médicament
         </a>
         <a href="${pageContext.request.contextPath}/ventes/">
-            <i class="bi bi-graph-up me-2"></i> Rapports
+            <i class="bi bi-cart me-2"></i> Ventes
         </a>
         <a href="${pageContext.request.contextPath}/alertes/">
             <i class="bi bi-exclamation-triangle me-2"></i> Alertes
@@ -158,6 +160,8 @@
             <form action="${pageContext.request.contextPath}/medicaments/" method="post" id="formMedicament">
                 <input type="hidden" name="action" value="modifier">
                 <input type="hidden" name="id" value="<%= medicament.getId() %>">
+                <input type="hidden" name="retour" value="<%= request.getParameter("retour") != null ? request.getParameter("retour") : "" %>">
+
                 
                 <!-- Informations de base -->
                 <div class="form-section">
@@ -282,7 +286,7 @@
 
                 <!-- Actions -->
                 <div class="d-flex justify-content-between mt-4">
-                    <a href="${pageContext.request.contextPath}/medicaments/" class="btn btn-secondary btn-action">
+                    <a href="${pageContext.request.contextPath}/<%= request.getParameter("retour") != null && request.getParameter("retour").equals("alertes") ? "alertes/" : "medicaments/" %>" class="btn btn-secondary btn-action">
                         <i class="bi bi-arrow-left me-2"></i>Annuler
                     </a>
                     <div>
@@ -321,6 +325,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+
+        
         // Validation en temps réel
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('formMedicament');

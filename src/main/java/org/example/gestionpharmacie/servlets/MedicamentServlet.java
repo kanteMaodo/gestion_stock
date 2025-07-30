@@ -50,9 +50,6 @@ public class MedicamentServlet extends HttpServlet {
         } else if (pathInfo.equals("/modifier")) {
             // Formulaire de modification
             handleFormulaireModifier(request, response, user);
-        } else if (pathInfo.equals("/reapprovisionner")) {
-            // Formulaire de réapprovisionnement
-            handleFormulaireReapprovisionner(request, response, user);
         } else if (pathInfo.startsWith("/api/")) {
             // Requêtes API
             handleApiRequest(request, response, user);
@@ -83,10 +80,8 @@ public class MedicamentServlet extends HttpServlet {
             handleSupprimerMedicament(request, response, user);
         } else if ("rechercher".equals(action)) {
             handleRechercheMedicaments(request, response, user);
-        } else if ("reapprovisionner".equals(action)) {
-            handleReapprovisionner(request, response, user);
         } else {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Action non reconnue: " + action);
         }
     }
     
@@ -210,10 +205,21 @@ public class MedicamentServlet extends HttpServlet {
             // Sauvegarder
             medicamentDAO.save(medicament);
             
-            response.sendRedirect(request.getContextPath() + "/medicaments/");
+            // Vérifier le paramètre retour pour la redirection
+            String retour = request.getParameter("retour");
+            if ("alertes".equals(retour)) {
+                response.sendRedirect(request.getContextPath() + "/alertes/?success=Médicament modifié avec succès");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/medicaments/?success=Médicament modifié avec succès");
+            }
             
         } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/medicaments/");
+            String retour = request.getParameter("retour");
+            if ("alertes".equals(retour)) {
+                response.sendRedirect(request.getContextPath() + "/alertes/?error=Erreur lors de la modification: " + e.getMessage());
+            } else {
+                response.sendRedirect(request.getContextPath() + "/medicaments/?error=Erreur lors de la modification: " + e.getMessage());
+            }
         }
     }
     
@@ -305,84 +311,4 @@ public class MedicamentServlet extends HttpServlet {
         }
     }
     
-    private void handleFormulaireReapprovisionner(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
-            throws ServletException, IOException {
-        
-        try {
-            String idParam = request.getParameter("id");
-            System.out.println("DEBUG: ID parameter = " + idParam); // Debug
-            
-            Long medicamentId = Long.parseLong(idParam);
-            System.out.println("DEBUG: Parsed ID = " + medicamentId); // Debug
-            
-            Medicament medicament = medicamentDAO.findById(medicamentId).orElse(null);
-            System.out.println("DEBUG: Found medicament = " + (medicament != null ? medicament.getNom() : "null")); // Debug
-            
-            if (medicament == null) {
-                System.out.println("DEBUG: Medicament not found, redirecting to list"); // Debug
-                response.sendRedirect(request.getContextPath() + "/medicaments/");
-                return;
-            }
-            
-            request.setAttribute("medicament", medicament);
-            request.setAttribute("user", user);
-            request.getRequestDispatcher("/views/medicaments/reapprovisionner.jsp").forward(request, response);
-            
-        } catch (Exception e) {
-            System.out.println("DEBUG: Exception in handleFormulaireReapprovisionner: " + e.getMessage()); // Debug
-            e.printStackTrace(); // Debug
-            response.sendRedirect(request.getContextPath() + "/medicaments/");
-        }
-    }
-    
-    private void handleReapprovisionner(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
-            throws ServletException, IOException {
-        
-        try {
-            Long medicamentId = Long.parseLong(request.getParameter("id"));
-            int quantite = Integer.parseInt(request.getParameter("quantite"));
-            String retour = request.getParameter("retour");
-            
-            if (quantite <= 0) {
-                if ("alertes".equals(retour)) {
-                    response.sendRedirect(request.getContextPath() + "/alertes/");
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/medicaments/");
-                }
-                return;
-            }
-            
-            Medicament medicament = medicamentDAO.findById(medicamentId).orElse(null);
-            if (medicament == null) {
-                if ("alertes".equals(retour)) {
-                    response.sendRedirect(request.getContextPath() + "/alertes/");
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/medicaments/");
-                }
-                return;
-            }
-            
-            // Mettre à jour le stock
-            int nouveauStock = medicament.getStock() + quantite;
-            medicament.setStock(nouveauStock);
-            
-            // Sauvegarder
-            medicamentDAO.save(medicament);
-            
-            // Rediriger avec succès selon la page d'origine
-            if ("alertes".equals(retour)) {
-                response.sendRedirect(request.getContextPath() + "/alertes/?success=Médicament réapprovisionné avec succès");
-            } else {
-                response.sendRedirect(request.getContextPath() + "/medicaments/?success=Médicament réapprovisionné avec succès");
-            }
-            
-        } catch (Exception e) {
-            String retour = request.getParameter("retour");
-            if ("alertes".equals(retour)) {
-                response.sendRedirect(request.getContextPath() + "/alertes/?error=Erreur lors du réapprovisionnement");
-            } else {
-                response.sendRedirect(request.getContextPath() + "/medicaments/?error=Erreur lors du réapprovisionnement");
-            }
-        }
-    }
 } 
