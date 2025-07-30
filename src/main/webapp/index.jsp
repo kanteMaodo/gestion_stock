@@ -520,8 +520,8 @@
                 <div class="feature-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="feature-title">Analyse des Ventes</div>
-                <div class="feature-desc">Rapports détaillés et statistiques de performance</div>
+                <div class="feature-title">Gestion des Ventes</div>
+                <div class="feature-desc">Processus de vente optimisé et suivi des transactions</div>
             </div>
 
             <div class="feature-card">

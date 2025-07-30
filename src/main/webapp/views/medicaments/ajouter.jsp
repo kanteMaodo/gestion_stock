@@ -174,7 +174,7 @@
                             <i class="fas fa-users me-2"></i> Utilisateurs
                         </a>
                         <a class="nav-link" href="#">
-                            <i class="fas fa-chart-bar me-2"></i> Rapports
+                            <i class="fas fa-shopping-cart me-2"></i> Ventes
                         </a>
                     </nav>
                 </div>

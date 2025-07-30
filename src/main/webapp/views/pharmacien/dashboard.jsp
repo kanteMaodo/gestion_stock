@@ -9,7 +9,7 @@
     DashboardStats stats = (DashboardStats) request.getAttribute("stats");
     List<Medicament> stockFaible = (List<Medicament>) request.getAttribute("stockFaible");
     List<Medicament> expirationProche = (List<Medicament>) request.getAttribute("expirationProche");
-    List<Vente> ventesRecentes = (List<Vente>) request.getAttribute("ventesRecentes");
+
     
     if (stats == null) {
         stats = new DashboardStats(0, 0, 0, 0, 0.0);
@@ -147,8 +147,8 @@
         <a href="${pageContext.request.contextPath}/medicaments/ajouter">
             <i class="bi bi-plus-circle me-2"></i> Ajouter Médicament
         </a>
-        <a href="${pageContext.request.contextPath}/ventes/">
-            <i class="bi bi-cart me-2"></i> Ventes
+        <a href="#">
+            <i class="bi bi-graph-up me-2"></i> Rapports
         </a>
         <a href="${pageContext.request.contextPath}/alertes/" class="notification-badge">
             <i class="bi bi-exclamation-triangle me-2"></i> Alertes
@@ -192,11 +192,11 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card quick-action-card" onclick="window.location.href='${pageContext.request.contextPath}/ventes/nouvelle'">
+                <div class="card quick-action-card" onclick="window.location.href='${pageContext.request.contextPath}/alertes/'">
                     <div class="card-body text-center p-4">
-                        <i class="bi bi-cart-plus fs-1 mb-3"></i>
-                        <h5>Nouvelle Vente</h5>
-                        <p class="mb-0">Vendre des médicaments</p>
+                        <i class="bi bi-exclamation-triangle fs-1 mb-3"></i>
+                        <h5>Voir Alertes</h5>
+                        <p class="mb-0">Stock faible et expiration</p>
                     </div>
                 </div>
             </div>
@@ -234,9 +234,9 @@
             <div class="col-md-3">
                 <div class="card stats-card">
                     <div class="card-body text-center p-4">
-                        <i class="bi bi-cart-check fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= stats.getVentesAujourdhui() %></h3>
-                        <p class="mb-0">Ventes Aujourd'hui</p>
+                        <i class="bi bi-exclamation-triangle fs-1 mb-3"></i>
+                        <h3 class="mb-1"><%= stats.getAlertesCritiques() %></h3>
+                        <p class="mb-0">Alertes Critiques</p>
                     </div>
                 </div>
             </div>
@@ -340,52 +340,6 @@
                     <% } %>
                 </div>
             </div>
-        </div>
-
-        <!-- Ventes Récentes -->
-        <div class="alert-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">
-                    <i class="bi bi-graph-up text-success me-2"></i>
-                    Ventes Récentes
-                </h5>
-                <a href="${pageContext.request.contextPath}/ventes/" class="btn btn-sm btn-outline-success">
-                    Voir toutes les ventes
-                </a>
-            </div>
-            
-            <% if (ventesRecentes != null && !ventesRecentes.isEmpty()) { %>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>N° Vente</th>
-                                <th>Date</th>
-                                <th>Montant</th>
-                                <th>Vendeur</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% for (Vente vente : ventesRecentes) { %>
-                                <tr>
-                                    <td>#<%= vente.getId() %></td>
-                                    <td><%= vente.getDateVente().format(formatter) %></td>
-                                    <td><strong><%= String.format("%.0f", vente.getMontantTotal()) %> FCFA</strong></td>
-                                    <td><%= vente.getUtilisateur() != null ? vente.getUtilisateur().getNomComplet() : "N/A" %></td>
-                                    <td>
-                                        <button class="btn-action btn-primary" onclick="window.location.href='${pageContext.request.contextPath}/ventes/details?id=<%= vente.getId() %>'">
-                                            Détails
-                                        </button>
-                                    </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            <% } else { %>
-                <p class="text-muted text-center py-3">Aucune vente récente</p>
-            <% } %>
         </div>
     </div>
 

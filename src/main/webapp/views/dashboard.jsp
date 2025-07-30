@@ -1,45 +1,18 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="org.example.gestionpharmacie.model.*" %>
+<%@ page import="org.example.gestionpharmacie.servlets.DashboardServlet.DashboardStats" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 
 <%
     Utilisateur user = (Utilisateur) request.getAttribute("user");
-    if (user == null) {
-        user = (Utilisateur) session.getAttribute("utilisateur");
-    }
-    
-    // Données par défaut si les stats ne sont pas disponibles
-    long totalMedicaments = 0;
-    long medicamentsDisponibles = 0;
-    long ventesAujourdhui = 0;
-    long alertesCritiques = 0;
-    double chiffreAffaires = 0.0;
-    
-    // Essayer de récupérer les stats du DashboardServlet
-    try {
-        Object statsObj = request.getAttribute("stats");
-        if (statsObj != null && statsObj.getClass().getName().contains("DashboardStats")) {
-            // Utiliser la réflexion pour accéder aux méthodes
-            java.lang.reflect.Method getTotal = statsObj.getClass().getMethod("getTotalMedicaments");
-            java.lang.reflect.Method getDisponibles = statsObj.getClass().getMethod("getMedicamentsDisponibles");
-            java.lang.reflect.Method getVentes = statsObj.getClass().getMethod("getVentesAujourdhui");
-            java.lang.reflect.Method getAlertes = statsObj.getClass().getMethod("getAlertesCritiques");
-            java.lang.reflect.Method getCA = statsObj.getClass().getMethod("getChiffreAffairesAujourdhui");
-            
-            totalMedicaments = (Long) getTotal.invoke(statsObj);
-            medicamentsDisponibles = (Long) getDisponibles.invoke(statsObj);
-            ventesAujourdhui = (Long) getVentes.invoke(statsObj);
-            alertesCritiques = (Long) getAlertes.invoke(statsObj);
-            chiffreAffaires = (Double) getCA.invoke(statsObj);
-        }
-    } catch (Exception e) {
-        // Utiliser les valeurs par défaut
-    }
-    
+    DashboardStats stats = (DashboardStats) request.getAttribute("stats");
     List<Medicament> stockFaible = (List<Medicament>) request.getAttribute("stockFaible");
     List<Medicament> expirationProche = (List<Medicament>) request.getAttribute("expirationProche");
-    List<Vente> ventesRecentes = (List<Vente>) request.getAttribute("ventesRecentes");
+    
+    if (stats == null) {
+        stats = new DashboardStats(0, 0, 0, 0, 0.0);
+    }
     
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 %>
@@ -213,13 +186,13 @@
         <a href="${pageContext.request.contextPath}/medicaments/ajouter">
             <i class="bi bi-plus-circle me-2"></i> Ajouter Médicament
         </a>
-        <a href="${pageContext.request.contextPath}/ventes/">
-            <i class="bi bi-cart me-2"></i> Ventes
+        <a href="#">
+            <i class="bi bi-graph-up me-2"></i> Rapports
         </a>
         <a href="${pageContext.request.contextPath}/alertes/" class="notification-badge">
             <i class="bi bi-exclamation-triangle me-2"></i> Alertes
             <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
-                <%= alertesCritiques %>
+                <%= stats.getAlertesCritiques() %>
             </span>
         </a>
         <a href="${pageContext.request.contextPath}/logout">
@@ -239,7 +212,7 @@
                 <a href="${pageContext.request.contextPath}/alertes/" class="notification-badge position-relative text-decoration-none">
                     <i class="bi bi-bell fs-4"></i>
                     <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
-                        <%= alertesCritiques %>
+                        <%= stats.getAlertesCritiques() %>
                     </span>
                 </a>
                 <div class="text-end">
@@ -264,20 +237,20 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card quick-action-card" onclick="window.location.href='${pageContext.request.contextPath}/ventes/nouvelle'">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-cart-plus fs-1 mb-3"></i>
-                        <h5>Nouvelle Vente</h5>
-                        <p class="mb-0">Vendre des médicaments</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
                 <div class="card quick-action-card" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/'">
                     <div class="card-body text-center p-4">
                         <i class="bi bi-boxes fs-1 mb-3"></i>
                         <h5>Gérer Stock</h5>
                         <p class="mb-0">Ajuster les quantités</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card quick-action-card" onclick="window.location.href='${pageContext.request.contextPath}/alertes/'">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-exclamation-triangle fs-1 mb-3"></i>
+                        <h5>Voir Alertes</h5>
+                        <p class="mb-0">Stock faible et expiration</p>
                     </div>
                 </div>
             </div>
@@ -289,7 +262,7 @@
                 <div class="card stats-card">
                     <div class="card-body text-center p-4">
                         <i class="bi bi-capsule fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= totalMedicaments %></h3>
+                        <h3 class="mb-1"><%= stats.getTotalMedicaments() %></h3>
                         <p class="mb-0">Total Médicaments</p>
                     </div>
                 </div>
@@ -298,7 +271,7 @@
                 <div class="card stats-card">
                     <div class="card-body text-center p-4">
                         <i class="bi bi-check-circle fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= medicamentsDisponibles %></h3>
+                        <h3 class="mb-1"><%= stats.getMedicamentsDisponibles() %></h3>
                         <p class="mb-0">Disponibles</p>
                     </div>
                 </div>
@@ -306,9 +279,9 @@
             <div class="col-md-3">
                 <div class="card stats-card">
                     <div class="card-body text-center p-4">
-                        <i class="bi bi-cart-check fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= ventesAujourdhui %></h3>
-                        <p class="mb-0">Ventes Aujourd'hui</p>
+                        <i class="bi bi-exclamation-triangle fs-1 mb-3"></i>
+                        <h3 class="mb-1"><%= stats.getAlertesCritiques() %></h3>
+                        <p class="mb-0">Alertes Critiques</p>
                     </div>
                 </div>
             </div>
@@ -316,7 +289,7 @@
                 <div class="card stats-card">
                     <div class="card-body text-center p-4">
                         <i class="bi bi-bar-chart fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= String.format("%.0f", chiffreAffaires) %> FCFA</h3>
+                        <h3 class="mb-1"><%= String.format("%.0f", stats.getChiffreAffairesAujourdhui()) %> FCFA</h3>
                         <p class="mb-0">Chiffre d'Affaires</p>
                     </div>
                 </div>
@@ -353,7 +326,7 @@
                                         <tr>
                                             <td><%= med.getNom() %></td>
                                             <td><span class="badge bg-danger"><%= med.getStock() %></span></td>
-                                                                                                                 <td>
+                                            <td>
                                                 <a href="${pageContext.request.contextPath}/medicaments/?action=modifier&id=<%= med.getId() %>" 
                                                    class="btn-action btn-warning"
                                                    title="Modifier le stock">
@@ -397,7 +370,7 @@
                                         <tr>
                                             <td><%= med.getNom() %></td>
                                             <td><span class="badge bg-warning"><%= med.getDateExpiration() != null ? med.getDateExpiration().format(formatter) : "N/A" %></span></td>
-                                                                                                                 <td>
+                                            <td>
                                                 <a href="${pageContext.request.contextPath}/medicaments/?action=modifier&id=<%= med.getId() %>" 
                                                    class="btn-action btn-danger"
                                                    title="Modifier la date d'expiration">
@@ -412,52 +385,6 @@
                     <% } %>
                 </div>
             </div>
-        </div>
-
-        <!-- Ventes Récentes -->
-        <div class="alert-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">
-                    <i class="bi bi-graph-up text-success me-2"></i>
-                    Ventes Récentes
-                </h5>
-                <a href="${pageContext.request.contextPath}/ventes/" class="btn btn-sm btn-outline-success">
-                    Voir toutes les ventes
-                </a>
-            </div>
-            
-            <% if (ventesRecentes != null && !ventesRecentes.isEmpty()) { %>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>N° Vente</th>
-                                <th>Date</th>
-                                <th>Montant</th>
-                                <th>Vendeur</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% for (Vente vente : ventesRecentes) { %>
-                                <tr>
-                                    <td>#<%= vente.getId() %></td>
-                                    <td><%= vente.getDateVente() != null ? vente.getDateVente().format(formatter) : "N/A" %></td>
-                                    <td><strong><%= vente.getMontantTotal() != null ? String.format("%.0f", vente.getMontantTotal()) : "0" %> FCFA</strong></td>
-                                    <td><%= vente.getVendeur() != null ? vente.getVendeur().getNomComplet() : "N/A" %></td>
-                                    <td>
-                                        <button class="btn-action btn-primary" 
-                                                onclick="window.location.href='${pageContext.request.contextPath}/ventes/details?id=<%= vente.getId() %>'"
-                                                title="Voir les détails de la vente">
-                                            <i class="bi bi-eye-fill me-1"></i>Détails
-                                        </button>
-                                    </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            <% } %>
         </div>
     </div>
 

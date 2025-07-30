@@ -34,12 +34,12 @@ public class Vente implements Serializable {
 
     @Column(name = "statut", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private StatutVente statut = StatutVente.COMPLETEE;
+    private StatutVente statut = StatutVente.EN_COURS;
 
     @Column(name = "commentaire", columnDefinition = "TEXT")
     private String commentaire;
 
-    @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<LigneVente> lignesVente = new ArrayList<>();
 
     @Column(name = "date_creation", nullable = false)
@@ -69,7 +69,7 @@ public class Vente implements Serializable {
     public Vente() {
         this.dateVente = LocalDateTime.now();
         this.dateCreation = LocalDateTime.now();
-        this.statut = StatutVente.COMPLETEE;
+        this.statut = StatutVente.EN_COURS;
     }
 
     public Vente(Utilisateur vendeur) {

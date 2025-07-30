@@ -18,7 +18,9 @@ import org.example.gestionpharmacie.model.LigneVente;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @WebServlet("/ventes/*")
 public class VenteServlet extends HttpServlet {
@@ -117,10 +119,18 @@ public class VenteServlet extends HttpServlet {
     private void handleListeVentes(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
             throws ServletException, IOException {
         
-        List<Vente> ventes = venteDAO.findVentesRecentes(50);
-        request.setAttribute("ventes", ventes);
-        
-        request.getRequestDispatcher("/views/ventes/liste.jsp").forward(request, response);
+        try {
+            List<Vente> ventes = venteDAO.findVentesRecentes(50);
+            request.setAttribute("ventes", ventes);
+            
+            request.getRequestDispatcher("/views/ventes/liste.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // En cas d'erreur, on affiche une liste vide
+            request.setAttribute("ventes", new ArrayList<>());
+            request.setAttribute("error", "Erreur lors du chargement des ventes: " + e.getMessage());
+            request.getRequestDispatcher("/views/ventes/liste.jsp").forward(request, response);
+        }
     }
     
     private void handleNouvelleVente(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
@@ -143,13 +153,14 @@ public class VenteServlet extends HttpServlet {
         
         try {
             Long id = Long.parseLong(idStr);
-            Vente vente = venteDAO.findById(id);
-            
-            if (vente == null) {
+            Optional<Vente> venteOpt = venteDAO.findById(id);
+
+            if (venteOpt.isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/ventes/?error=Vente non trouvée");
                 return;
             }
             
+            Vente vente = venteOpt.get();
             request.setAttribute("vente", vente);
             request.getRequestDispatcher("/views/ventes/details.jsp").forward(request, response);
             
@@ -169,12 +180,14 @@ public class VenteServlet extends HttpServlet {
         
         try {
             Long id = Long.parseLong(idStr);
-            Vente vente = venteDAO.findById(id);
+            Optional<Vente> venteOpt = venteDAO.findById(id);
             
-            if (vente == null) {
+            if (venteOpt.isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/ventes/?error=Vente non trouvée");
                 return;
             }
+            
+            Vente vente = venteOpt.get();
             
             if (!vente.peutEtreAnnulee()) {
                 response.sendRedirect(request.getContextPath() + "/ventes/?error=Cette vente ne peut pas être annulée");
@@ -222,13 +235,16 @@ public class VenteServlet extends HttpServlet {
             Long medicamentId = Long.parseLong(medicamentIdStr);
             Integer quantite = Integer.parseInt(quantiteStr);
             
-            Vente vente = venteDAO.findById(venteId);
-            Medicament medicament = medicamentDAO.findById(medicamentId);
+            Optional<Vente> venteOpt = venteDAO.findById(venteId);
+            Optional<Medicament> medicamentOpt = medicamentDAO.findById(medicamentId);
             
-            if (vente == null || medicament == null) {
+            if (venteOpt.isEmpty() || medicamentOpt.isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Vente ou médicament non trouvé");
                 return;
             }
+            
+            Vente vente = venteOpt.get();
+            Medicament medicament = medicamentOpt.get();
             
             // Vérifier le stock disponible
             if (medicament.getStock() < quantite) {
@@ -262,12 +278,14 @@ public class VenteServlet extends HttpServlet {
             Long venteId = Long.parseLong(venteIdStr);
             Integer ligneIndex = Integer.parseInt(ligneIndexStr);
             
-            Vente vente = venteDAO.findById(venteId);
+            Optional<Vente> venteOpt = venteDAO.findById(venteId);
             
-            if (vente == null) {
+            if (venteOpt.isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Vente non trouvée");
                 return;
             }
+            
+            Vente vente = venteOpt.get();
             
             if (ligneIndex >= 0 && ligneIndex < vente.getLignesVente().size()) {
                 vente.getLignesVente().remove(ligneIndex.intValue());
@@ -295,12 +313,14 @@ public class VenteServlet extends HttpServlet {
         
         try {
             Long venteId = Long.parseLong(venteIdStr);
-            Vente vente = venteDAO.findById(venteId);
+            Optional<Vente> venteOpt = venteDAO.findById(venteId);
             
-            if (vente == null) {
+            if (venteOpt.isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Vente non trouvée");
                 return;
             }
+            
+            Vente vente = venteOpt.get();
             
             if (vente.getLignesVente().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Impossible de finaliser une vente vide");
