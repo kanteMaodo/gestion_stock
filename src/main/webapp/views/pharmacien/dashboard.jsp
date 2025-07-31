@@ -188,7 +188,7 @@
                     <a class="nav-link" href="${pageContext.request.contextPath}/alertes/">
                         <i class="fas fa-exclamation-triangle me-2"></i> Alertes
                     </a>
-                    <a class="nav-link" href="logout">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/logout">
                         <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
                     </a>
                 </nav>

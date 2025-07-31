@@ -191,7 +191,7 @@
                     <a class="nav-link" href="${pageContext.request.contextPath}/alertes/">
                         <i class="fas fa-exclamation-triangle me-2"></i> Alertes
                     </a>
-                    <a class="nav-link" href="logout">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/logout">
                         <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
                     </a>
                 </nav>
@@ -223,6 +223,8 @@
                         </div>
                     </div>
                 </div>
+
+
 
                 <!-- Statistics Cards -->
                 <div class="row">
@@ -374,7 +376,7 @@
                                         %>
                                         <tr>
                                             <td>#<%= vente.getId() %></td>
-                                            <td><%= vente.getVendeur().getNomComplet() %></td>
+                                            <td><%= vente.getVendeur() != null ? vente.getVendeur().getNomComplet() : "N/A" %></td>
                                             <td><strong><%= String.format("%.0f", vente.getMontantTotal()) %> FCFA</strong></td>
                                             <td><%= vente.getDateVente().toLocalDate() %></td>
                                             <td>

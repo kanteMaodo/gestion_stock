@@ -23,8 +23,8 @@ public class LogoutServlet extends HttpServlet {
             session.invalidate();
         }
         
-        // Rediriger vers la page d'accueil
-        response.sendRedirect(request.getContextPath() + "/");
+        // Rediriger vers la page d'authentification
+        response.sendRedirect(request.getContextPath() + "/auth");
     }
     
     @Override

@@ -37,7 +37,7 @@ public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDA
         EntityManager em = emf.createEntityManager();
         try {
             TypedQuery<Vente> query = em.createQuery(
-                "SELECT v FROM Vente v ORDER BY v.dateVente DESC",
+                "SELECT v FROM Vente v JOIN FETCH v.utilisateur ORDER BY v.dateVente DESC",
                 Vente.class
             );
             query.setMaxResults(limit);
@@ -107,14 +107,14 @@ public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDA
             LocalDateTime debutJour = date.atStartOfDay();
             LocalDateTime finJour = date.atTime(23, 59, 59);
             
-            TypedQuery<BigDecimal> query = em.createQuery(
+            TypedQuery<Double> query = em.createQuery(
                 "SELECT COALESCE(SUM(v.montantTotal), 0) FROM Vente v WHERE v.dateVente BETWEEN :debutJour AND :finJour",
-                BigDecimal.class
+                Double.class
             );
             query.setParameter("debutJour", debutJour);
             query.setParameter("finJour", finJour);
-            BigDecimal result = query.getSingleResult();
-            return result != null ? result.doubleValue() : 0.0;
+            Double result = query.getSingleResult();
+            return result != null ? result : 0.0;
         } finally {
             em.close();
         }
@@ -127,14 +127,14 @@ public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDA
             LocalDateTime debut = dateDebut.atStartOfDay();
             LocalDateTime fin = dateFin.atTime(23, 59, 59);
             
-            TypedQuery<BigDecimal> query = em.createQuery(
+            TypedQuery<Double> query = em.createQuery(
                 "SELECT COALESCE(SUM(v.montantTotal), 0) FROM Vente v WHERE v.dateVente BETWEEN :debut AND :fin",
-                BigDecimal.class
+                Double.class
             );
             query.setParameter("debut", debut);
             query.setParameter("fin", fin);
-            BigDecimal result = query.getSingleResult();
-            return result != null ? result.doubleValue() : 0.0;
+            Double result = query.getSingleResult();
+            return result != null ? result : 0.0;
         } finally {
             em.close();
         }

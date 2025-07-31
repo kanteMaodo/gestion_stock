@@ -40,6 +40,8 @@ public class MedicamentServlet extends HttpServlet {
             String action = request.getParameter("action");
             if ("supprimer".equals(action)) {
                 handleSupprimerMedicament(request, response, user);
+            } else if ("modifier".equals(action)) {
+                handleFormulaireModifier(request, response, user);
             } else {
                 // Liste des médicaments
                 handleListeMedicaments(request, response, user);
@@ -208,9 +210,9 @@ public class MedicamentServlet extends HttpServlet {
             // Vérifier le paramètre retour pour la redirection
             String retour = request.getParameter("retour");
             if ("alertes".equals(retour)) {
-                response.sendRedirect(request.getContextPath() + "/alertes/?success=Médicament modifié avec succès");
+                response.sendRedirect(request.getContextPath() + "/alertes/?success=Medicament modifie avec succes");
             } else {
-                response.sendRedirect(request.getContextPath() + "/medicaments/?success=Médicament modifié avec succès");
+                response.sendRedirect(request.getContextPath() + "/medicaments/?success=Medicament modifie avec succes");
             }
             
         } catch (Exception e) {

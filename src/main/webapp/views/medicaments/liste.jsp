@@ -70,7 +70,7 @@
                                     <td><%= medicament.getPrix() %> FCFA</td>
                                     <td><%= medicament.getStock() %></td>
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/medicaments/modifier?id=<%= medicament.getId() %>" class="btn btn-sm btn-primary">Modifier</a>
+                                        <a href="${pageContext.request.contextPath}/medicaments/?action=modifier&id=<%= medicament.getId() %>" class="btn btn-sm btn-primary">Modifier</a>
                                         <a href="${pageContext.request.contextPath}/medicaments/?action=supprimer&id=<%= medicament.getId() %>" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ?')">Supprimer</a>
                                     </td>
                                 </tr>

@@ -21,55 +21,8 @@
     <title>Alertes - Pharmacie Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body { background: #f8f9fa; }
-        .alert-card { 
-            border-radius: 12px; 
-            border: none; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .alert-card:hover { transform: translateY(-2px); }
-        .alert-header { 
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: white;
-            border-radius: 12px 12px 0 0;
-        }
-        .alert-warning-header {
-            background: linear-gradient(135deg, #ffc107, #e0a800);
-            color: #212529;
-        }
-        .stock-critical { color: #dc3545; font-weight: bold; }
-        .expiration-critical { 
-            background: #dc3545; 
-            color: white; 
-            padding: 2px 8px; 
-            border-radius: 4px; 
-        }
-        .expiration-warning { 
-            background: #ffc107; 
-            color: #212529; 
-            padding: 2px 8px; 
-            border-radius: 4px; 
-        }
-        .stats-card {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            border-radius: 12px;
-        }
-        .btn-action {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            margin: 2px;
-            transition: all 0.2s;
-        }
-        .btn-action:hover { transform: scale(1.05); }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-warning { background: #ffc107; color: #212529; }
-    </style>
 </head>
-<body>
+<body class="bg-light">
     <div class="container-fluid">
         <!-- Main content -->
         <div class="px-md-4">
@@ -105,7 +58,7 @@
             <!-- Statistiques -->
             <div class="row mb-4">
                 <div class="col-md-3">
-                    <div class="card stats-card">
+                    <div class="card bg-primary text-white">
                         <div class="card-body text-center">
                             <h5>Total Médicaments</h5>
                             <h3><%= alertes.get("totalMedicaments") %></h3>
@@ -113,7 +66,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card stats-card">
+                    <div class="card bg-success text-white">
                         <div class="card-body text-center">
                             <h5>Disponibles</h5>
                             <h3><%= alertes.get("medicamentsDisponibles") %></h3>
@@ -141,8 +94,8 @@
             <!-- Alertes Stock Faible -->
             <div class="row mb-4">
                 <div class="col-12">
-                    <div class="card alert-card">
-                        <div class="card-header alert-header">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
                             <h5 class="mb-0">
                                 <i class="bi bi-exclamation-circle"></i>
                                 Stock Faible (<%= stockFaible.size() %>)
@@ -171,13 +124,13 @@
                                                         <% } %>
                                                     </td>
                                                     <td>
-                                                        <span class="stock-critical"><%= med.getStock() %></span>
+                                                        <span class="text-danger fw-bold"><%= med.getStock() %></span>
                                                     </td>
                                                     <td><%= med.getSeuilAlerte() %></td>
                                                     <td><strong><%= String.format("%.0f", med.getPrix()) %> FCFA</strong></td>
                                                     <td>
                                                         <a href="${pageContext.request.contextPath}/medicaments/?action=modifier&id=<%= med.getId() %>&retour=alertes" 
-                                                           class="btn-action btn-warning" 
+                                                           class="btn btn-warning btn-sm" 
                                                            title="Modifier le stock">
                                                             <i class="bi bi-pencil"></i>
                                                         </a>
@@ -202,8 +155,8 @@
             <!-- Alertes Expiration Proche -->
             <div class="row">
                 <div class="col-12">
-                    <div class="card alert-card">
-                        <div class="card-header alert-warning-header">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
                             <h5 class="mb-0">
                                 <i class="bi bi-clock"></i>
                                 Expiration Proche (<%= expirationProche.size() %>)
@@ -238,11 +191,11 @@
                                                     </td>
                                                     <td>
                                                         <% if (joursRestants <= 7) { %>
-                                                            <span class="expiration-critical">
+                                                            <span class="badge bg-danger">
                                                                 <%= med.getDateExpiration().format(formatter) %>
                                                             </span>
                                                         <% } else { %>
-                                                            <span class="expiration-warning">
+                                                            <span class="badge bg-warning text-dark">
                                                                 <%= med.getDateExpiration().format(formatter) %>
                                                             </span>
                                                         <% } %>
@@ -259,7 +212,7 @@
                                                     <td><%= med.getStock() %></td>
                                                     <td>
                                                         <a href="${pageContext.request.contextPath}/medicaments/?action=modifier&id=<%= med.getId() %>&retour=alertes" 
-                                                           class="btn-action btn-warning" 
+                                                           class="btn btn-warning btn-sm" 
                                                            title="Modifier la date d'expiration">
                                                             <i class="bi bi-pencil"></i>
                                                         </a>

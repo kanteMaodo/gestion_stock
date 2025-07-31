@@ -52,7 +52,8 @@ public class Utilisateur implements Serializable {
     // Énumération pour les rôles
     public enum Role {
         PHARMACIEN("Pharmacien"),
-        ADMIN("Administrateur");
+        ADMIN("Administrateur"),
+        ASSISTANT("Assistant");
 
         private final String libelle;
 
