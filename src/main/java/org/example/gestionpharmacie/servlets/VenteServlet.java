@@ -182,7 +182,7 @@ public class VenteServlet extends HttpServlet {
                     vente.ajouterLigne(ligne);
                     venteDAO.save(vente);
                     
-                    response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&success=Article ajouté avec succès");
+                    response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&success=vente ajout avec succes");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&error=Stock insuffisant");
                 }
@@ -248,7 +248,7 @@ public class VenteServlet extends HttpServlet {
                 vente.finaliser();
                 venteDAO.save(vente);
                 
-                response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&success=Vente finalisée avec succès");
+                response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&success=Vente finalise avec succes");
             } else {
                 response.sendRedirect(request.getContextPath() + "/ventes/");
             }

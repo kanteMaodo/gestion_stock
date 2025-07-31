@@ -49,7 +49,6 @@ public class Utilisateur implements Serializable {
     @Column(name = "derniere_connexion")
     private LocalDateTime derniereConnexion;
 
-    // Énumération pour les rôles
     public enum Role {
         PHARMACIEN("Pharmacien"),
         ADMIN("Administrateur"),
@@ -83,7 +82,6 @@ public class Utilisateur implements Serializable {
         this.role = role;
     }
 
-    // Méthodes callback JPA
     @PrePersist
     protected void onCreate() {
         this.dateCreation = LocalDateTime.now();

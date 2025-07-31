@@ -49,7 +49,6 @@ public class Medicament {
     @Column(name = "date_modification")
     private LocalDateTime dateModification;
     
-    // Constructeurs
     public Medicament() {
         this.dateCreation = LocalDateTime.now();
         this.actif = true;
@@ -64,7 +63,6 @@ public class Medicament {
         this.seuilAlerte = seuilAlerte;
     }
     
-    // Méthodes utilitaires
     public boolean isStockFaible() {
         return stock <= seuilAlerte;
     }

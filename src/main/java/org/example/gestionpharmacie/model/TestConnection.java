@@ -11,13 +11,13 @@ public class TestConnection {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("PharmaPU");
             EntityManager em = emf.createEntityManager();
 
-            System.out.println("✅ Connexion réussie à PostgreSQL !");
-            System.out.println("✅ Table 'utilisateurs' sera créée automatiquement");
+            System.out.println(" Connexion réussie à PostgreSQL !");
+            System.out.println(" Table 'utilisateurs' sera créée automatiquement");
 
             em.close();
             emf.close();
         } catch (Exception e) {
-            System.err.println("❌ Erreur de connexion : " + e.getMessage());
+            System.err.println("Erreur de connexion : " + e.getMessage());
             e.printStackTrace();
         }
     }
