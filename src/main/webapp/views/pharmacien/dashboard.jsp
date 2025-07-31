@@ -1,343 +1,384 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page import="org.example.gestionpharmacie.model.*" %>
-<%@ page import="org.example.gestionpharmacie.servlets.DashboardServlet.DashboardStats" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.time.format.DateTimeFormatter" %>
-
+<%@ page import="org.example.gestionpharmacie.model.Utilisateur" %>
+<%@ page import="org.example.gestionpharmacie.model.Medicament" %>
+<%@ page import="org.example.gestionpharmacie.model.Vente" %>
+<%@ page import="java.util.*" %>
+<%@ page import="java.math.BigDecimal" %>
 <%
-    Utilisateur user = (Utilisateur) request.getAttribute("user");
-    DashboardStats stats = (DashboardStats) request.getAttribute("stats");
-    List<Medicament> stockFaible = (List<Medicament>) request.getAttribute("stockFaible");
-    List<Medicament> expirationProche = (List<Medicament>) request.getAttribute("expirationProche");
-
-    
-    if (stats == null) {
-        stats = new DashboardStats(0, 0, 0, 0, 0.0);
-    }
-    
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    Utilisateur user = (Utilisateur) session.getAttribute("utilisateur");
+    Map<String, Object> dashboardData = (Map<String, Object>) request.getAttribute("dashboardData");
 %>
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard Pharmacien - Pharmacie Manager</title>
+    <title>Dashboard Pharmacien - PHARMACIE MOUHAMED</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { 
-            background: #f4f7fa; 
+        :root {
+            --primary-color: #1e7e34;
+            --secondary-color: #28a745;
+            --accent-color: #20c997;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .sidebar { 
-            width: 250px; 
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: #fff; 
-            min-height: 100vh; 
-            position: fixed;
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
-        .sidebar a { 
-            color: #fff; 
-            text-decoration: none; 
-            display: block; 
-            padding: 16px 20px;
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 4px 12px;
             transition: all 0.3s ease;
-            border-left: 3px solid transparent;
         }
-        .sidebar a:hover, .sidebar a.active { 
-            background: rgba(255,255,255,0.1);
-            border-left-color: #fff;
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
             transform: translateX(5px);
         }
-        .main { 
-            margin-left: 250px; 
+
+        .main-content {
             padding: 20px;
         }
-        .card { 
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
-        .card:hover {
+
+        .stats-card:hover {
             transform: translateY(-5px);
         }
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 20px 30px; 
-            background: #fff; 
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .user-info { 
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 15px;
-        }
-        .quick-action-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            justify-content: center;
+            font-size: 24px;
             color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            margin-bottom: 16px;
         }
-        .quick-action-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+
+        .stats-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
-        .stats-card {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
+
+        .stats-label {
+            color: #6c757d;
+            font-size: 0.9em;
         }
-        .alert-section {
-            background: #fff;
-            border-radius: 15px;
+
+        .alert-card {
+            background: white;
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+        }
+
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px 12px;
+        }
+
+        .table td {
+            padding: 12px;
+            vertical-align: middle;
+        }
+
+        .badge-stock {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+
         .btn-action {
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 0.9em;
-            border: none;
-            cursor: pointer;
+            text-decoration: none;
             transition: all 0.3s ease;
         }
+
         .btn-action:hover {
-            transform: scale(1.05);
-        }
-        .notification-badge {
-            position: relative;
-        }
-        .notification-badge::after {
-            content: '<%= stats.getAlertesCritiques() %>';
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="text-center py-4">
-            <h4>PHARMACIE MOUHAMED</h4>
-            <small>Espace Pharmacien</small>
-        </div>
-        
-        <a href="${pageContext.request.contextPath}/dashboard" class="active">
-            <i class="bi bi-speedometer2 me-2"></i> Dashboard
-        </a>
-        <a href="${pageContext.request.contextPath}/medicaments/">
-            <i class="bi bi-box-seam me-2"></i> Gestion Stock
-        </a>
-        <a href="${pageContext.request.contextPath}/medicaments/ajouter">
-            <i class="bi bi-plus-circle me-2"></i> Ajouter Médicament
-        </a>
-        <a href="#">
-            <i class="bi bi-graph-up me-2"></i> Rapports
-        </a>
-        <a href="${pageContext.request.contextPath}/alertes/" class="notification-badge">
-            <i class="bi bi-exclamation-triangle me-2"></i> Alertes
-        </a>
-        <a href="${pageContext.request.contextPath}/logout">
-            <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
-        </a>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main">
-        <!-- Header -->
-        <div class="header">
-            <div>
-                <h2 class="mb-1">Dashboard Pharmacien</h2>
-                <p class="text-muted mb-0">Gestion des médicaments et stocks</p>
-            </div>
-            <div class="user-info">
-                <div class="notification-badge">
-                    <i class="bi bi-bell fs-4"></i>
-                </div>
-                <div class="text-end">
-                    <div class="fw-bold"><%= user != null ? user.getNomComplet() : "" %></div>
-                    <small class="text-muted"><%= user != null ? user.getRole().getLibelle() : "" %></small>
-                </div>
-                <div class="ms-3">
-                    <i class="bi bi-person-circle fs-1 text-primary"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card quick-action-card" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/ajouter'">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-plus-circle fs-1 mb-3"></i>
-                        <h5>Ajouter Médicament</h5>
-                        <p class="mb-0">Nouveau produit</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card quick-action-card" onclick="window.location.href='${pageContext.request.contextPath}/alertes/'">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-exclamation-triangle fs-1 mb-3"></i>
-                        <h5>Voir Alertes</h5>
-                        <p class="mb-0">Stock faible et expiration</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card quick-action-card" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/'">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-boxes fs-1 mb-3"></i>
-                        <h5>Gérer Stock</h5>
-                        <p class="mb-0">Ajuster les quantités</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card stats-card">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-capsule fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= stats.getTotalMedicaments() %></h3>
-                        <p class="mb-0">Total Médicaments</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card stats-card">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-check-circle fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= stats.getMedicamentsDisponibles() %></h3>
-                        <p class="mb-0">Disponibles</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card stats-card">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-exclamation-triangle fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= stats.getAlertesCritiques() %></h3>
-                        <p class="mb-0">Alertes Critiques</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card stats-card">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-currency-dollar fs-1 mb-3"></i>
-                        <h3 class="mb-1"><%= String.format("%.0f", stats.getChiffreAffairesAujourdhui()) %> FCFA</h3>
-                        <p class="mb-0">Chiffre d'Affaires</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alerts Section -->
+    <div class="container-fluid">
         <div class="row">
-            <!-- Stock Faible -->
-            <div class="col-md-6">
-                <div class="alert-section">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">
-                            <i class="bi bi-exclamation-triangle text-warning me-2"></i>
-                            Stock Faible
-                        </h5>
-                        <a href="${pageContext.request.contextPath}/medicaments/?filter=stock-faible" class="btn btn-sm btn-outline-warning">
-                            Voir tout
-                        </a>
-                    </div>
-                    
-                    <% if (stockFaible != null && !stockFaible.isEmpty()) { %>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Médicament</th>
-                                        <th>Stock</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (Medicament med : stockFaible) { %>
-                                        <tr>
-                                            <td><%= med.getNom() %></td>
-                                            <td><span class="badge bg-danger"><%= med.getStock() %></span></td>
-                                            <td>
-                                                <button class="btn-action btn-warning" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/modifier?id=<%= med.getId() %>'">
-                                                    Réapprovisionner
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
-                        </div>
-                    <% } else { %>
-                        <p class="text-muted text-center py-3">Aucun médicament en stock faible</p>
-                    <% } %>
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="text-center py-4">
+                    <i class="fas fa-clinic-medical fa-2x text-white mb-2"></i>
+                    <h5 class="text-white">PHARMACIE MOUHAMED</h5>
+                    <small class="text-white-50">Pharmacien</small>
                 </div>
+                
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#">
+                        <i class="fas fa-tachometer-alt me-2"></i> Tableau de bord
+                    </a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/medicaments/">
+                        <i class="fas fa-pills me-2"></i> Médicaments
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-chart-line me-2"></i> Ventes
+                    </a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/alertes/">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Alertes
+                    </a>
+                    <a class="nav-link" href="logout">
+                        <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
+                    </a>
+                </nav>
             </div>
 
-            <!-- Expiration Proche -->
-            <div class="col-md-6">
-                <div class="alert-section">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">
-                            <i class="bi bi-clock text-danger me-2"></i>
-                            Expiration Proche
-                        </h5>
-                        <a href="${pageContext.request.contextPath}/medicaments/?filter=expiration" class="btn btn-sm btn-outline-danger">
-                            Voir tout
-                        </a>
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Header -->
+                <div class="header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h2 class="mb-0">Dashboard Pharmacien</h2>
+                            <p class="text-muted mb-0">Vue d'ensemble du système</p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-bell text-muted"></i>
+                                    <span class="badge bg-danger ms-1">3</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Avatar">
+                                    <div>
+                                        <div class="fw-bold"><%= user.getNomComplet() %></div>
+                                        <small class="text-muted"><%= user.getRole().getLibelle() %></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <% if (expirationProche != null && !expirationProche.isEmpty()) { %>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Médicament</th>
-                                        <th>Expiration</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (Medicament med : expirationProche) { %>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-icon" style="background: var(--secondary-color);">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <div class="stats-number"><%= dashboardData.get("totalMedicaments") %></div>
+                            <div class="stats-label">Médicaments</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-icon" style="background: var(--accent-color);">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="stats-number"><%= dashboardData.get("totalVentes") %></div>
+                            <div class="stats-label">Ventes Aujourd'hui</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-icon" style="background: var(--primary-color);">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="stats-number"><%= String.format("%.0f", dashboardData.get("chiffreAffaires")) %> FCFA</div>
+                            <div class="stats-label">Chiffre d'Affaires</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Alertes Stock Faible -->
+                    <div class="col-md-6">
+                        <div class="alert-card">
+                            <div class="alert-header">
+                                <div class="alert-icon" style="background: var(--warning-color);">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h5 class="mb-0">Stock Faible</h5>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Médicament</th>
+                                            <th>Stock</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% 
+                                        List<Medicament> stockFaible = (List<Medicament>) dashboardData.get("medicamentsStockFaible");
+                                        for (Medicament med : stockFaible) {
+                                        %>
                                         <tr>
                                             <td><%= med.getNom() %></td>
-                                            <td><span class="badge bg-warning"><%= med.getDateExpiration() != null ? med.getDateExpiration().format(formatter) : "N/A" %></span></td>
                                             <td>
-                                                <button class="btn-action btn-danger" onclick="window.location.href='${pageContext.request.contextPath}/medicaments/modifier?id=<%= med.getId() %>'">
-                                                    Gérer
-                                                </button>
+                                                <span class="badge-stock bg-danger"><%= med.getStock() %></span>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="btn-action btn btn-sm btn-outline-primary">Commander</a>
                                             </td>
                                         </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    <% } else { %>
-                        <p class="text-muted text-center py-3">Aucun médicament en expiration proche</p>
-                    <% } %>
+                    </div>
+
+                    <!-- Médicaments Expiration -->
+                    <div class="col-md-6">
+                        <div class="alert-card">
+                            <div class="alert-header">
+                                <div class="alert-icon" style="background: var(--danger-color);">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <h5 class="mb-0">Expiration Proche</h5>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Médicament</th>
+                                            <th>Expiration</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% 
+                                        List<Medicament> expirationProche = (List<Medicament>) dashboardData.get("medicamentsExpiration");
+                                        for (Medicament med : expirationProche) {
+                                        %>
+                                        <tr>
+                                            <td><%= med.getNom() %></td>
+                                            <td>
+                                                <span class="badge-stock bg-warning"><%= med.getDateExpiration() != null ? med.getDateExpiration().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "N/A" %></span>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="btn-action btn btn-sm btn-outline-warning">Vérifier</a>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ventes Récentes -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert-card">
+                            <div class="alert-header">
+                                <div class="alert-icon" style="background: var(--accent-color);">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h5 class="mb-0">Ventes Récentes</h5>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Vendeur</th>
+                                            <th>Montant</th>
+                                            <th>Date</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% 
+                                        List<Vente> ventesRecentes = (List<Vente>) dashboardData.get("ventesRecentes");
+                                        if (ventesRecentes != null) {
+                                            for (Vente vente : ventesRecentes) {
+                                        %>
+                                        <tr>
+                                            <td><%= vente.getId() %></td>
+                                            <td><%= vente.getVendeur().getNomComplet() %></td>
+                                            <td><%= String.format("%.0f", vente.getMontantTotal()) %> FCFA</td>
+                                            <td><%= vente.getDateVente().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) %></td>
+                                            <td>
+                                                <span class="badge bg-<%= vente.getStatut() == Vente.StatutVente.COMPLETEE ? "success" : "warning" %>">
+                                                    <%= vente.getStatut().getLibelle() %>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <% 
+                                            }
+                                        }
+                                        %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Filtre de sécurité pour vérifier les rôles et protéger l'accès aux pages
  */
-@WebFilter(urlPatterns = {"/admin/*", "/pharmacien/*", "/assistant/*"})
+@WebFilter(urlPatterns = {"/admin/*", "/pharmacien/*"})
 public class RoleFilter implements Filter {
 
     @Override
@@ -73,12 +73,8 @@ public class RoleFilter implements Filter {
                 return true;
                 
             case PHARMACIEN:
-                // Le pharmacien peut accéder aux pages pharmacien et assistant
-                return path.startsWith("/pharmacien/") || path.startsWith("/assistant/");
-                
-            case ASSISTANT:
-                // L'assistant ne peut accéder qu'aux pages assistant
-                return path.startsWith("/assistant/");
+                // Le pharmacien peut accéder aux pages pharmacien
+                return path.startsWith("/pharmacien/");
                 
             default:
                 return false;

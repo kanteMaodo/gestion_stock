@@ -19,6 +19,7 @@ import org.example.gestionpharmacie.model.Vente;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
@@ -47,11 +48,22 @@ public class DashboardServlet extends HttpServlet {
             DashboardStats stats = getDashboardStats();
             
             // Récupérer les alertes
-            List<Medicament> stockFaible = medicamentDAO.findStockFaible();
-            List<Medicament> expirationProche = medicamentDAO.findExpirationProche();
+            List<Medicament> stockFaible = new ArrayList<>();
+            List<Medicament> expirationProche = new ArrayList<>();
+            try {
+                stockFaible = medicamentDAO.findStockFaible();
+                expirationProche = medicamentDAO.findExpirationProche();
+            } catch (Exception e) {
+                System.err.println("Erreur lors de la récupération des alertes: " + e.getMessage());
+            }
             
             // Récupérer les ventes récentes
-            List<Vente> ventesRecentes = venteDAO.findVentesRecentes(10); // 10 dernières ventes
+            List<Vente> ventesRecentes = new ArrayList<>();
+            try {
+                ventesRecentes = venteDAO.findVentesRecentes(10); // 10 dernières ventes
+            } catch (Exception e) {
+                System.err.println("Erreur lors de la récupération des ventes: " + e.getMessage());
+            }
             
             // Ajouter les données à la requête
             request.setAttribute("stats", stats);
@@ -66,7 +78,8 @@ public class DashboardServlet extends HttpServlet {
             
         } catch (Exception e) {
             request.setAttribute("error", "Erreur lors du chargement du dashboard: " + e.getMessage());
-            request.getRequestDispatcher("/views/dashboard.jsp").forward(request, response);
+            // En cas d'erreur, rediriger vers le dashboard admin par défaut
+            request.getRequestDispatcher("/views/admin/dashboard.jsp").forward(request, response);
         }
     }
     
@@ -102,20 +115,26 @@ public class DashboardServlet extends HttpServlet {
      * Récupère toutes les statistiques du dashboard en une seule fois pour optimiser les performances
      */
     private DashboardStats getDashboardStats() {
-        // Compter les médicaments
-        long totalMedicaments = medicamentDAO.count();
-        long medicamentsDisponibles = medicamentDAO.countDisponibles();
-        
-        // Compter les ventes d'aujourd'hui
-        LocalDate aujourdhui = LocalDate.now();
-        long ventesAujourdhui = venteDAO.countVentesByDate(aujourdhui);
-        double chiffreAffairesAujourdhui = venteDAO.getChiffreAffairesByDate(aujourdhui);
-        
-        // Compter les alertes critiques
-        long alertesCritiques = medicamentDAO.countStockFaible() + medicamentDAO.countExpirationProche();
-        
-        return new DashboardStats(totalMedicaments, medicamentsDisponibles, 
-                                ventesAujourdhui, alertesCritiques, chiffreAffairesAujourdhui);
+        try {
+            // Compter les médicaments
+            long totalMedicaments = medicamentDAO.count();
+            long medicamentsDisponibles = medicamentDAO.countDisponibles();
+            
+            // Compter les ventes d'aujourd'hui
+            LocalDate aujourdhui = LocalDate.now();
+            long ventesAujourdhui = venteDAO.countVentesByDate(aujourdhui);
+            double chiffreAffairesAujourdhui = venteDAO.getChiffreAffairesByDate(aujourdhui);
+            
+            // Compter les alertes critiques
+            long alertesCritiques = medicamentDAO.countStockFaible() + medicamentDAO.countExpirationProche();
+            
+            return new DashboardStats(totalMedicaments, medicamentsDisponibles, 
+                                    ventesAujourdhui, alertesCritiques, chiffreAffairesAujourdhui);
+        } catch (Exception e) {
+            // En cas d'erreur (tables non créées, etc.), retourner des valeurs par défaut
+            System.err.println("Erreur lors du calcul des statistiques: " + e.getMessage());
+            return new DashboardStats(0, 0, 0, 0, 0.0);
+        }
     }
     
     /**
@@ -125,12 +144,11 @@ public class DashboardServlet extends HttpServlet {
         switch (role) {
             case PHARMACIEN:
                 return "/views/pharmacien/dashboard.jsp";
-            case ASSISTANT:
-                return "/views/assistant/dashboard.jsp";
             case ADMIN:
                 return "/views/admin/dashboard.jsp";
             default:
-                return "/views/dashboard.jsp";
+                // Par défaut, rediriger vers le dashboard admin
+                return "/views/admin/dashboard.jsp";
         }
     }
     

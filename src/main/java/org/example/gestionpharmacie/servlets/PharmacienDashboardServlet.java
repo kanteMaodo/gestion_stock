@@ -1,162 +1,101 @@
 package org.example.gestionpharmacie.servlets;
 
-import jakarta.persistence.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.example.gestionpharmacie.dao.MedicamentDAO;
+import org.example.gestionpharmacie.dao.MedicamentDAOImpl;
+import org.example.gestionpharmacie.dao.VenteDAO;
+import org.example.gestionpharmacie.dao.VenteDAOImpl;
 import org.example.gestionpharmacie.model.Utilisateur;
 import org.example.gestionpharmacie.model.Medicament;
 import org.example.gestionpharmacie.model.Vente;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
-/**
- * Servlet pour le dashboard pharmacien
- */
-@WebServlet(name = "pharmacienDashboardServlet", value = "/pharmacien/dashboard")
+@WebServlet("/pharmacien/dashboard")
 public class PharmacienDashboardServlet extends HttpServlet {
-    private EntityManagerFactory emf;
-
+    
+    private final MedicamentDAO medicamentDAO = new MedicamentDAOImpl();
+    private final VenteDAO venteDAO = new VenteDAOImpl();
+    
     @Override
-    public void init() {
-        emf = Persistence.createEntityManagerFactory("PharmaPU");
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(false);
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         
-        // Vérifier si l'utilisateur est connecté et est pharmacien
-        if (session == null || session.getAttribute("utilisateur") == null) {
-            resp.sendRedirect(req.getContextPath() + "/auth");
+        HttpSession session = request.getSession();
+        Utilisateur user = (Utilisateur) session.getAttribute("utilisateur");
+        
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth");
             return;
         }
         
-        Utilisateur utilisateur = (Utilisateur) session.getAttribute("utilisateur");
-        if (utilisateur.getRole() != Utilisateur.Role.PHARMACIEN) {
-            resp.sendRedirect(req.getContextPath() + "/unauthorized");
+        // Vérifier que l'utilisateur est pharmacien
+        if (user.getRole() != Utilisateur.Role.PHARMACIEN) {
+            response.sendRedirect(request.getContextPath() + "/unauthorized");
             return;
         }
         
-        EntityManager em = emf.createEntityManager();
         try {
-            // Récupérer les données pour le dashboard pharmacien
-            Map<String, Object> dashboardData = getDashboardData(em);
+            // Créer les données du dashboard
+            Map<String, Object> dashboardData = getDashboardData();
             
             // Ajouter les données à la requête
-            req.setAttribute("dashboardData", dashboardData);
-            req.setAttribute("utilisateur", utilisateur);
+            request.setAttribute("dashboardData", dashboardData);
+            request.setAttribute("user", user);
             
-            // Forward vers la JSP
-            req.getRequestDispatcher("/views/pharmacien/dashboard.jsp").forward(req, resp);
+            request.getRequestDispatcher("/views/pharmacien/dashboard.jsp").forward(request, response);
             
-        } finally {
-            em.close();
+        } catch (Exception e) {
+            // En cas d'erreur, créer des données par défaut
+            Map<String, Object> defaultData = createDefaultDashboardData();
+            request.setAttribute("dashboardData", defaultData);
+            request.setAttribute("user", user);
+            request.setAttribute("error", "Erreur lors du chargement des données: " + e.getMessage());
+            request.getRequestDispatcher("/views/pharmacien/dashboard.jsp").forward(request, response);
         }
     }
-
-    /**
-     * Récupère toutes les données nécessaires pour le dashboard pharmacien
-     */
-    private Map<String, Object> getDashboardData(EntityManager em) {
+    
+    private Map<String, Object> getDashboardData() {
         Map<String, Object> data = new HashMap<>();
         
-        // Statistiques des médicaments
-        data.put("totalMedicaments", getTotalMedicaments(em));
-        data.put("medicamentsDisponibles", getMedicamentsDisponibles(em));
-        data.put("medicamentsStockFaible", getMedicamentsStockFaible(em));
-        data.put("medicamentsExpiration", getMedicamentsExpiration(em));
-        
-        // Statistiques des ventes
-        data.put("ventesAujourdhui", getVentesAujourdhui(em));
-        data.put("chiffreAffairesAujourdhui", getChiffreAffairesAujourdhui(em));
-        data.put("ventesRecentes", getVentesRecentes(em));
-        
-        // Alertes
-        data.put("alertesStock", getAlertesStock(em));
-        data.put("alertesExpiration", getAlertesExpiration(em));
+        try {
+            // Statistiques globales (sans utilisateurs)
+            data.put("totalMedicaments", medicamentDAO.count());
+            data.put("totalVentes", venteDAO.countVentesByDate(LocalDate.now()));
+            data.put("chiffreAffaires", venteDAO.getChiffreAffairesByDate(LocalDate.now()));
+            
+            // Alertes
+            data.put("medicamentsStockFaible", medicamentDAO.findStockFaible());
+            data.put("medicamentsExpiration", medicamentDAO.findExpirationProche());
+            
+            // Données récentes
+            data.put("ventesRecentes", venteDAO.findVentesRecentes(10));
+            
+        } catch (Exception e) {
+            // En cas d'erreur, utiliser des valeurs par défaut
+            data = createDefaultDashboardData();
+        }
         
         return data;
     }
-
-    private Long getTotalMedicaments(EntityManager em) {
-        TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(m) FROM Medicament m WHERE m.actif = true", Long.class);
-        return query.getSingleResult();
-    }
-
-    private Long getMedicamentsDisponibles(EntityManager em) {
-        TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(m) FROM Medicament m WHERE m.actif = true AND m.stock > 0", Long.class);
-        return query.getSingleResult();
-    }
-
-    private List<Medicament> getMedicamentsStockFaible(EntityManager em) {
-        TypedQuery<Medicament> query = em.createQuery(
-                "SELECT m FROM Medicament m WHERE m.stock <= m.seuilAlerte AND m.actif = true ORDER BY m.stock ASC", 
-                Medicament.class);
-        query.setMaxResults(15);
-        return query.getResultList();
-    }
-
-    private List<Medicament> getMedicamentsExpiration(EntityManager em) {
-        TypedQuery<Medicament> query = em.createQuery(
-                "SELECT m FROM Medicament m WHERE m.dateExpiration <= :dateExpiration AND m.actif = true ORDER BY m.dateExpiration ASC", 
-                Medicament.class);
-        query.setParameter("dateExpiration", LocalDate.now().plusDays(30));
-        query.setMaxResults(15);
-        return query.getResultList();
-    }
-
-    private Long getVentesAujourdhui(EntityManager em) {
-        TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(v) FROM Vente v WHERE v.dateVente >= :dateDebut", Long.class);
-        query.setParameter("dateDebut", LocalDate.now().atStartOfDay());
-        return query.getSingleResult();
-    }
-
-    private BigDecimal getChiffreAffairesAujourdhui(EntityManager em) {
-        TypedQuery<BigDecimal> query = em.createQuery(
-                "SELECT COALESCE(SUM(v.montantTotal), 0) FROM Vente v WHERE v.dateVente >= :dateDebut", BigDecimal.class);
-        query.setParameter("dateDebut", LocalDate.now().atStartOfDay());
-        return query.getSingleResult();
-    }
-
-    private List<Vente> getVentesRecentes(EntityManager em) {
-        TypedQuery<Vente> query = em.createQuery(
-                "SELECT v FROM Vente v ORDER BY v.dateVente DESC", 
-                Vente.class);
-        query.setMaxResults(10);
-        return query.getResultList();
-    }
-
-    private List<Medicament> getAlertesStock(EntityManager em) {
-        TypedQuery<Medicament> query = em.createQuery(
-                "SELECT m FROM Medicament m WHERE m.stock <= m.seuilAlerte AND m.actif = true ORDER BY m.stock ASC", 
-                Medicament.class);
-        query.setMaxResults(5);
-        return query.getResultList();
-    }
-
-    private List<Medicament> getAlertesExpiration(EntityManager em) {
-        TypedQuery<Medicament> query = em.createQuery(
-                "SELECT m FROM Medicament m WHERE m.dateExpiration <= :dateExpiration AND m.actif = true ORDER BY m.dateExpiration ASC", 
-                Medicament.class);
-        query.setParameter("dateExpiration", LocalDate.now().plusDays(7));
-        query.setMaxResults(5);
-        return query.getResultList();
-    }
-
-    @Override
-    public void destroy() {
-        if (emf != null) emf.close();
+    
+    private Map<String, Object> createDefaultDashboardData() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("totalMedicaments", 0L);
+        data.put("totalVentes", 0L);
+        data.put("chiffreAffaires", 0.0);
+        data.put("medicamentsStockFaible", new java.util.ArrayList<Medicament>());
+        data.put("medicamentsExpiration", new java.util.ArrayList<Medicament>());
+        data.put("ventesRecentes", new java.util.ArrayList<Vente>());
+        return data;
     }
 } 

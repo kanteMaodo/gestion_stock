@@ -165,7 +165,7 @@ public class MedicamentServlet extends HttpServlet {
             medicamentDAO.save(medicament);
             
             // Rediriger avec un message de succès
-            response.sendRedirect(request.getContextPath() + "/medicaments/");
+            response.sendRedirect(request.getContextPath() + "/medicaments/?success=Medicament ajoute avec succes");
             
         } catch (NumberFormatException e) {
             request.setAttribute("error", "Veuillez saisir des valeurs numériques valides pour le prix, le stock et le seuil d'alerte");
@@ -234,9 +234,9 @@ public class MedicamentServlet extends HttpServlet {
             if (medicament != null) {
                 medicament.setActif(false);
                 medicamentDAO.save(medicament);
-                response.sendRedirect(request.getContextPath() + "/medicaments/");
+                response.sendRedirect(request.getContextPath() + "/medicaments/?success=Medicament supprime avec succes");
             } else {
-                response.sendRedirect(request.getContextPath() + "/medicaments/");
+                response.sendRedirect(request.getContextPath() + "/medicaments/?error=Médicament non trouvé");
             }
             
         } catch (Exception e) {
@@ -266,7 +266,7 @@ public class MedicamentServlet extends HttpServlet {
                     disponible = Boolean.parseBoolean(request.getParameter("disponible"));
                 }
             } catch (NumberFormatException e) {
-                // Ignorer les erreurs de parsing
+                //
             }
             
             List<Medicament> medicaments = medicamentDAO.rechercheAvancee(nom, categorie, fabricant, minPrix, maxPrix, disponible);

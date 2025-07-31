@@ -413,7 +413,7 @@
                                 <option value="">Sélectionnez un rôle</option>
                                 <option value="ADMIN">Administrateur</option>
                                 <option value="PHARMACIEN">Pharmacien</option>
-                                <option value="ASSISTANT">Assistant</option>
+        
                             </select>
                         </div>
                         

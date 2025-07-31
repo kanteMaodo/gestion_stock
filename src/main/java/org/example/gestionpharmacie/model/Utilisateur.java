@@ -52,7 +52,6 @@ public class Utilisateur implements Serializable {
     // Énumération pour les rôles
     public enum Role {
         PHARMACIEN("Pharmacien"),
-        ASSISTANT("Assistant"),
         ADMIN("Administrateur");
 
         private final String libelle;
@@ -196,9 +195,7 @@ public class Utilisateur implements Serializable {
         return this.role == Utilisateur.Role.PHARMACIEN;
     }
 
-    public boolean isAssistant() {
-        return this.role == Utilisateur.Role.ASSISTANT;
-    }
+
 
     public void updateDerniereConnexion() {
         this.derniereConnexion = LocalDateTime.now();

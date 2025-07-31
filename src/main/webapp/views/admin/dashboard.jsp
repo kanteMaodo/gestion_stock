@@ -177,7 +177,7 @@
                 
                 <nav class="nav flex-column">
                     <a class="nav-link active" href="#">
-                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        <i class="fas fa-tachometer-alt me-2"></i> Tableau de bord
                     </a>
                     <a class="nav-link" href="#">
                         <i class="fas fa-users me-2"></i> Utilisateurs
@@ -188,12 +188,9 @@
                     <a class="nav-link" href="#">
                         <i class="fas fa-chart-line me-2"></i> Ventes
                     </a>
-                                            <a class="nav-link" href="#">
-                            <i class="fas fa-cog me-2"></i> Paramètres
-                        </a>
-                        <a class="nav-link" href="${pageContext.request.contextPath}/test-data">
-                            <i class="fas fa-database me-2"></i> Données de test
-                        </a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/alertes/">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Alertes
+                    </a>
                     <a class="nav-link" href="logout">
                         <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
                     </a>

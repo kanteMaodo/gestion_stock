@@ -47,8 +47,15 @@ public class AuthServlet extends HttpServlet {
                 utilisateur.updateDerniereConnexion();
                 utilisateurDAO.save(utilisateur);
                 
-                // Rediriger vers le dashboard unifié
-                resp.sendRedirect(req.getContextPath() + "/dashboard");
+                // Rediriger vers le dashboard approprié selon le rôle
+                if (utilisateur.getRole() == Utilisateur.Role.ADMIN) {
+                    resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+                } else if (utilisateur.getRole() == Utilisateur.Role.PHARMACIEN) {
+                    resp.sendRedirect(req.getContextPath() + "/pharmacien/dashboard");
+                } else {
+                    // Par défaut, rediriger vers le dashboard admin
+                    resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+                }
             } else {
                 req.setAttribute("loginError", "Email ou mot de passe incorrect !");
                 req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);

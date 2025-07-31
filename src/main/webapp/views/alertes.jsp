@@ -79,13 +79,8 @@
                     Alertes Médicaments
                 </h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group me-2">
-                        <span class="badge bg-danger fs-6">
-                            <%= alertes.get("totalAlertes") %> Alertes
-                        </span>
-                    </div>
-                    <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-outline-primary">
-                        <i class="bi bi-arrow-left me-2"></i>Retour au Dashboard
+                    <a href="${pageContext.request.contextPath}/<%= user.getRole() == Utilisateur.Role.ADMIN ? "admin" : "pharmacien" %>/dashboard" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-2"></i>Retour au Tableau de bord
                     </a>
                 </div>
             </div>

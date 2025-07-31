@@ -107,9 +107,9 @@
             <small>Espace <%= user.getRole().getLibelle() %></small>
         </div>
 
-        <a href="${pageContext.request.contextPath}/dashboard">
-            <i class="bi bi-speedometer2 me-2"></i> Dashboard
-        </a>
+                            <a href="${pageContext.request.contextPath}/dashboard">
+                        <i class="bi bi-speedometer2 me-2"></i> Tableau de bord
+                    </a>
         <a href="${pageContext.request.contextPath}/medicaments/">
             <i class="bi bi-box-seam me-2"></i> Gestion Stock
         </a>
@@ -118,9 +118,6 @@
         </a>
         <a href="${pageContext.request.contextPath}/ventes/">
             <i class="bi bi-cart me-2"></i> Ventes
-        </a>
-        <a href="${pageContext.request.contextPath}/alertes/">
-            <i class="bi bi-exclamation-triangle me-2"></i> Alertes
         </a>
         <a href="${pageContext.request.contextPath}/logout">
             <i class="bi bi-box-arrow-right me-2"></i> Déconnexion

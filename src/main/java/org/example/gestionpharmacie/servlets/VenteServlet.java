@@ -16,23 +16,14 @@ import org.example.gestionpharmacie.model.Vente;
 import org.example.gestionpharmacie.model.LigneVente;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @WebServlet("/ventes/*")
 public class VenteServlet extends HttpServlet {
     
-    private VenteDAO venteDAO;
-    private MedicamentDAO medicamentDAO;
-    
-    @Override
-    public void init() throws ServletException {
-        venteDAO = new VenteDAOImpl();
-        medicamentDAO = new MedicamentDAOImpl();
-    }
+    private final VenteDAO venteDAO = new VenteDAOImpl();
+    private final MedicamentDAO medicamentDAO = new MedicamentDAOImpl();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -47,31 +38,14 @@ public class VenteServlet extends HttpServlet {
         }
         
         String pathInfo = request.getPathInfo();
-        if (pathInfo == null) {
-            pathInfo = "/";
-        }
-        
-        try {
-            switch (pathInfo) {
-                case "/":
-                    handleListeVentes(request, response, user);
-                    break;
-                case "/nouvelle":
-                    handleNouvelleVente(request, response, user);
-                    break;
-                case "/details":
-                    handleDetailsVente(request, response, user);
-                    break;
-                case "/annuler":
-                    handleAnnulerVente(request, response, user);
-                    break;
-                default:
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    break;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erreur: " + e.getMessage());
+        if (pathInfo == null || pathInfo.equals("/")) {
+            handleListeVentes(request, response);
+        } else if (pathInfo.equals("/nouvelle")) {
+            handleNouvelleVente(request, response);
+        } else if (pathInfo.equals("/details")) {
+            handleDetailsVente(request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
     
@@ -88,263 +62,191 @@ public class VenteServlet extends HttpServlet {
         }
         
         String pathInfo = request.getPathInfo();
-        if (pathInfo == null) {
-            pathInfo = "/";
-        }
-        
-        try {
-            switch (pathInfo) {
-                case "/creer":
-                    handleCreerVente(request, response, user);
-                    break;
-                case "/ajouter-ligne":
-                    handleAjouterLigne(request, response, user);
-                    break;
-                case "/supprimer-ligne":
-                    handleSupprimerLigne(request, response, user);
-                    break;
-                case "/finaliser":
-                    handleFinaliserVente(request, response, user);
-                    break;
-                default:
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    break;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erreur: " + e.getMessage());
+        if (pathInfo == null || pathInfo.equals("/")) {
+            handleCreerVente(request, response);
+        } else if (pathInfo.equals("/ajouter-ligne")) {
+            handleAjouterLigne(request, response);
+        } else if (pathInfo.equals("/supprimer-ligne")) {
+            handleSupprimerLigne(request, response);
+        } else if (pathInfo.equals("/finaliser")) {
+            handleFinaliserVente(request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
     
-    private void handleListeVentes(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+    private void handleListeVentes(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
         try {
-            List<Vente> ventes = venteDAO.findVentesRecentes(50);
+            List<Vente> ventes = venteDAO.findAll();
             request.setAttribute("ventes", ventes);
-            
             request.getRequestDispatcher("/views/ventes/liste.jsp").forward(request, response);
         } catch (Exception e) {
-            e.printStackTrace();
-            // En cas d'erreur, on affiche une liste vide
-            request.setAttribute("ventes", new ArrayList<>());
             request.setAttribute("error", "Erreur lors du chargement des ventes: " + e.getMessage());
             request.getRequestDispatcher("/views/ventes/liste.jsp").forward(request, response);
         }
     }
     
-    private void handleNouvelleVente(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+    private void handleNouvelleVente(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        String venteId = request.getParameter("venteId");
+        
+        if (venteId != null && !venteId.trim().isEmpty()) {
+            // Continuer une vente existante
+            try {
+                Long id = Long.parseLong(venteId);
+                Optional<Vente> venteOpt = venteDAO.findById(id);
+                if (venteOpt.isPresent()) {
+                    Vente vente = venteOpt.get();
+                    request.setAttribute("vente", vente);
+                }
+            } catch (NumberFormatException e) {
+                // Ignorer l'erreur et créer une nouvelle vente
+            }
+        }
         
         List<Medicament> medicaments = medicamentDAO.findAll();
         request.setAttribute("medicaments", medicaments);
-        
         request.getRequestDispatcher("/views/ventes/nouvelle.jsp").forward(request, response);
     }
     
-    private void handleDetailsVente(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+    private void handleDetailsVente(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        String venteId = request.getParameter("id");
         
-        String idStr = request.getParameter("id");
-        if (idStr == null || idStr.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/ventes/?error=ID de vente manquant");
+        if (venteId == null || venteId.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/ventes/");
             return;
         }
         
         try {
-            Long id = Long.parseLong(idStr);
+            Long id = Long.parseLong(venteId);
             Optional<Vente> venteOpt = venteDAO.findById(id);
-
-            if (venteOpt.isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/ventes/?error=Vente non trouvée");
-                return;
+            
+            if (venteOpt.isPresent()) {
+                request.setAttribute("vente", venteOpt.get());
+                request.getRequestDispatcher("/views/ventes/details.jsp").forward(request, response);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/ventes/");
             }
-            
-            Vente vente = venteOpt.get();
-            request.setAttribute("vente", vente);
-            request.getRequestDispatcher("/views/ventes/details.jsp").forward(request, response);
-            
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/ventes/?error=ID de vente invalide");
+            response.sendRedirect(request.getContextPath() + "/ventes/");
         }
     }
     
-    private void handleAnnulerVente(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+    private void handleCreerVente(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Utilisateur user = (Utilisateur) session.getAttribute("utilisateur");
         
-        String idStr = request.getParameter("id");
-        if (idStr == null || idStr.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/ventes/?error=ID de vente manquant");
-            return;
-        }
-        
-        try {
-            Long id = Long.parseLong(idStr);
-            Optional<Vente> venteOpt = venteDAO.findById(id);
-            
-            if (venteOpt.isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/ventes/?error=Vente non trouvée");
-                return;
-            }
-            
-            Vente vente = venteOpt.get();
-            
-            if (!vente.peutEtreAnnulee()) {
-                response.sendRedirect(request.getContextPath() + "/ventes/?error=Cette vente ne peut pas être annulée");
-                return;
-            }
-            
-            vente.annuler();
-            venteDAO.save(vente);
-            
-            response.sendRedirect(request.getContextPath() + "/ventes/?success=Vente annulée avec succès");
-            
-        } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/ventes/?error=ID de vente invalide");
-        }
-    }
-    
-    private void handleCreerVente(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
-            throws ServletException, IOException {
-        
-        // Créer une nouvelle vente
         Vente vente = new Vente(user);
         venteDAO.save(vente);
-        
-        // Stocker l'ID de la vente en session pour les lignes suivantes
-        HttpSession session = request.getSession();
-        session.setAttribute("venteEnCours", vente.getId());
         
         response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?venteId=" + vente.getId());
     }
     
-    private void handleAjouterLigne(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+    private void handleAjouterLigne(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        String venteId = request.getParameter("venteId");
+        String medicamentId = request.getParameter("medicamentId");
+        String quantite = request.getParameter("quantite");
         
-        String venteIdStr = request.getParameter("venteId");
-        String medicamentIdStr = request.getParameter("medicamentId");
-        String quantiteStr = request.getParameter("quantite");
-        
-        if (venteIdStr == null || medicamentIdStr == null || quantiteStr == null) {
-            response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Paramètres manquants");
+        if (venteId == null || medicamentId == null || quantite == null) {
+            response.sendRedirect(request.getContextPath() + "/ventes/");
             return;
         }
         
         try {
-            Long venteId = Long.parseLong(venteIdStr);
-            Long medicamentId = Long.parseLong(medicamentIdStr);
-            Integer quantite = Integer.parseInt(quantiteStr);
+            Long vId = Long.parseLong(venteId);
+            Long mId = Long.parseLong(medicamentId);
+            Integer qte = Integer.parseInt(quantite);
             
-            Optional<Vente> venteOpt = venteDAO.findById(venteId);
-            Optional<Medicament> medicamentOpt = medicamentDAO.findById(medicamentId);
+            Optional<Vente> venteOpt = venteDAO.findById(vId);
+            Optional<Medicament> medicamentOpt = medicamentDAO.findById(mId);
             
-            if (venteOpt.isEmpty() || medicamentOpt.isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Vente ou médicament non trouvé");
-                return;
+            if (venteOpt.isPresent() && medicamentOpt.isPresent()) {
+                Vente vente = venteOpt.get();
+                Medicament medicament = medicamentOpt.get();
+                
+                if (medicament.getStock() >= qte) {
+                    LigneVente ligne = new LigneVente(medicament, qte);
+                    vente.ajouterLigne(ligne);
+                    venteDAO.save(vente);
+                    
+                    response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&success=Article ajouté avec succès");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&error=Stock insuffisant");
+                }
+            } else {
+                response.sendRedirect(request.getContextPath() + "/ventes/");
             }
-            
-            Vente vente = venteOpt.get();
-            Medicament medicament = medicamentOpt.get();
-            
-            // Vérifier le stock disponible
-            if (medicament.getStock() < quantite) {
-                response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Stock insuffisant pour " + medicament.getNom());
-                return;
-            }
-            
-            // Ajouter la ligne de vente
-            vente.ajouterLigne(medicament, quantite);
-            venteDAO.save(vente);
-            
-            response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?venteId=" + venteId + "&success=Ligne ajoutée");
-            
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Paramètres invalides");
+            response.sendRedirect(request.getContextPath() + "/ventes/");
         }
     }
     
-    private void handleSupprimerLigne(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+    private void handleSupprimerLigne(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        String venteId = request.getParameter("venteId");
+        String ligneIndex = request.getParameter("ligneIndex");
         
-        String venteIdStr = request.getParameter("venteId");
-        String ligneIndexStr = request.getParameter("ligneIndex");
-        
-        if (venteIdStr == null || ligneIndexStr == null) {
-            response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Paramètres manquants");
+        if (venteId == null || ligneIndex == null) {
+            response.sendRedirect(request.getContextPath() + "/ventes/");
             return;
         }
         
         try {
-            Long venteId = Long.parseLong(venteIdStr);
-            Integer ligneIndex = Integer.parseInt(ligneIndexStr);
+            Long vId = Long.parseLong(venteId);
+            int index = Integer.parseInt(ligneIndex);
             
-            Optional<Vente> venteOpt = venteDAO.findById(venteId);
+            Optional<Vente> venteOpt = venteDAO.findById(vId);
             
-            if (venteOpt.isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Vente non trouvée");
-                return;
-            }
-            
-            Vente vente = venteOpt.get();
-            
-            if (ligneIndex >= 0 && ligneIndex < vente.getLignesVente().size()) {
-                vente.getLignesVente().remove(ligneIndex.intValue());
-                vente.calculerMontantTotal();
+            if (venteOpt.isPresent()) {
+                Vente vente = venteOpt.get();
+                vente.supprimerLigne(index);
                 venteDAO.save(vente);
+                
+                response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&success=Article supprimé avec succès");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/ventes/");
             }
-            
-            response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?venteId=" + venteId + "&success=Ligne supprimée");
-            
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Paramètres invalides");
+            response.sendRedirect(request.getContextPath() + "/ventes/");
         }
     }
     
-    private void handleFinaliserVente(HttpServletRequest request, HttpServletResponse response, Utilisateur user) 
+    private void handleFinaliserVente(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
-        String venteIdStr = request.getParameter("venteId");
+        String venteId = request.getParameter("venteId");
         String commentaire = request.getParameter("commentaire");
         
-        if (venteIdStr == null) {
-            response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=ID de vente manquant");
+        if (venteId == null) {
+            response.sendRedirect(request.getContextPath() + "/ventes/");
             return;
         }
         
         try {
-            Long venteId = Long.parseLong(venteIdStr);
-            Optional<Vente> venteOpt = venteDAO.findById(venteId);
+            Long vId = Long.parseLong(venteId);
+            Optional<Vente> venteOpt = venteDAO.findById(vId);
             
-            if (venteOpt.isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Vente non trouvée");
-                return;
+            if (venteOpt.isPresent()) {
+                Vente vente = venteOpt.get();
+                
+                if (commentaire != null && !commentaire.trim().isEmpty()) {
+                    vente.setCommentaire(commentaire);
+                }
+                
+                vente.finaliser();
+                venteDAO.save(vente);
+                
+                response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + vente.getId() + "&success=Vente finalisée avec succès");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/ventes/");
             }
-            
-            Vente vente = venteOpt.get();
-            
-            if (vente.getLignesVente().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=Impossible de finaliser une vente vide");
-                return;
-            }
-            
-            // Déduire le stock pour chaque ligne
-            for (LigneVente ligne : vente.getLignesVente()) {
-                ligne.validerStock();
-            }
-            
-            // Finaliser la vente
-            vente.setCommentaire(commentaire);
-            vente.setStatut(Vente.StatutVente.COMPLETEE);
-            venteDAO.save(vente);
-            
-            // Nettoyer la session
-            HttpSession session = request.getSession();
-            session.removeAttribute("venteEnCours");
-            
-            response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + venteId + "&success=Vente finalisée avec succès");
-            
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/ventes/nouvelle?error=ID de vente invalide");
+            response.sendRedirect(request.getContextPath() + "/ventes/");
+        } catch (IllegalStateException e) {
+            response.sendRedirect(request.getContextPath() + "/ventes/details?id=" + venteId + "&error=" + e.getMessage());
         }
     }
 } 

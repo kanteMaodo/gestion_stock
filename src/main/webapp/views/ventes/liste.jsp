@@ -98,17 +98,10 @@
             background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
             color: white;
         }
-        .btn-action i {
-            font-size: 1em;
-            transition: transform 0.3s ease;
-        }
-        .btn-action:hover i {
-            transform: scale(1.1);
-        }
         .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9em;
             font-weight: 600;
         }
         .status-completed {
@@ -123,30 +116,6 @@
             background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
             color: #212529;
         }
-        .table th {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: none;
-            font-weight: 600;
-            color: #495057;
-        }
-        .table td {
-            vertical-align: middle;
-            border-color: #f1f3f4;
-        }
-        .amount {
-            font-weight: 600;
-            color: #28a745;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6c757d;
-        }
-        .empty-state i {
-            font-size: 4em;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
     </style>
 </head>
 <body>
@@ -156,9 +125,9 @@
             <h4><i class="bi bi-heart-pulse me-2"></i>Pharmacie</h4>
         </div>
         <nav>
-            <a href="${pageContext.request.contextPath}/dashboard">
-                <i class="bi bi-speedometer2 me-2"></i> Dashboard
-            </a>
+                                <a href="${pageContext.request.contextPath}/dashboard">
+                        <i class="bi bi-speedometer2 me-2"></i> Tableau de bord
+                    </a>
             <a href="${pageContext.request.contextPath}/medicaments/">
                 <i class="bi bi-capsule me-2"></i> Médicaments
             </a>
@@ -179,9 +148,9 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="mb-1">
-                    <i class="bi bi-cart-check me-2"></i>Liste des Ventes
+                    <i class="bi bi-cart me-2"></i>Liste des Ventes
                 </h2>
-                <p class="text-muted mb-0">Gérez toutes les transactions de vente</p>
+                <p class="text-muted mb-0">Gestion des transactions commerciales</p>
             </div>
             <a href="${pageContext.request.contextPath}/ventes/nouvelle" class="btn-action btn-success">
                 <i class="bi bi-plus-circle me-2"></i>Nouvelle Vente
@@ -203,19 +172,22 @@
             </div>
         <% } %>
 
-        <!-- Tableau des ventes -->
         <div class="card">
-            <div class="card-body p-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>Ventes
+                </h5>
+            </div>
+            <div class="card-body">
                 <% if (ventes != null && !ventes.isEmpty()) { %>
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>N° Vente</th>
                                     <th>Date</th>
                                     <th>Vendeur</th>
-                                    <th>Articles</th>
-                                    <th>Montant Total</th>
+                                    <th>Montant</th>
                                     <th>Statut</th>
                                     <th>Actions</th>
                                 </tr>
@@ -228,21 +200,16 @@
                                         </td>
                                         <td>
                                             <i class="bi bi-calendar3 me-1"></i>
-                                            <%= vente.getDateVente().format(formatter) %>
+                                            <%= vente.getDateVente() != null ? vente.getDateVente().format(formatter) : "N/A" %>
                                         </td>
                                         <td>
                                             <i class="bi bi-person me-1"></i>
-                                            <%= vente.getVendeur().getNom() %>
+                                            <%= vente.getVendeur() != null ? vente.getVendeur().getNomComplet() : "N/A" %>
                                         </td>
                                         <td>
-                                            <i class="bi bi-box me-1"></i>
-                                            <%= vente.getNombreArticles() %> article(s)
-                                        </td>
-                                        <td>
-                                            <span class="amount">
-                                                <i class="bi bi-currency-dollar me-1"></i>
-                                                <%= String.format("%.2f", vente.getMontantTotal()) %> €
-                                            </span>
+                                            <strong class="text-success">
+                                                <%= vente.getMontantTotal() != null ? String.format("%.0f", vente.getMontantTotal()) : "0" %> FCFA
+                                            </strong>
                                         </td>
                                         <td>
                                             <% if (vente.getStatut() == Vente.StatutVente.COMPLETEE) { %>
@@ -260,21 +227,16 @@
                                             <% } %>
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group" style="gap: 8px;">
-                                                <a href="${pageContext.request.contextPath}/ventes/details?id=<%= vente.getId() %>" 
-                                                   class="btn-action btn-primary"
-                                                   title="Voir les détails">
-                                                    <i class="bi bi-eye-fill"></i>
+                                            <a href="${pageContext.request.contextPath}/ventes/details?id=<%= vente.getId() %>" 
+                                               class="btn-action btn-primary me-2" title="Voir les détails">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+                                            <% if (vente.getStatut() == Vente.StatutVente.EN_COURS) { %>
+                                                <a href="${pageContext.request.contextPath}/ventes/nouvelle?venteId=<%= vente.getId() %>" 
+                                                   class="btn-action btn-success me-2" title="Continuer la vente">
+                                                    <i class="bi bi-plus-circle"></i>
                                                 </a>
-                                                <% if (vente.peutEtreAnnulee()) { %>
-                                                    <a href="${pageContext.request.contextPath}/ventes/annuler?id=<%= vente.getId() %>" 
-                                                       class="btn-action btn-danger"
-                                                       onclick="return confirm('Êtes-vous sûr de vouloir annuler cette vente ?')"
-                                                       title="Annuler la vente">
-                                                        <i class="bi bi-x-circle-fill"></i>
-                                                    </a>
-                                                <% } %>
-                                            </div>
+                                            <% } %>
                                         </td>
                                     </tr>
                                 <% } %>
@@ -282,10 +244,10 @@
                         </table>
                     </div>
                 <% } else { %>
-                    <div class="empty-state">
-                        <i class="bi bi-cart-x"></i>
-                        <h4>Aucune vente trouvée</h4>
-                        <p class="mb-4">Commencez par créer votre première vente</p>
+                    <div class="text-center py-5">
+                        <i class="bi bi-cart-x fs-1 text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucune vente trouvée</h5>
+                        <p class="text-muted">Commencez par créer votre première vente</p>
                         <a href="${pageContext.request.contextPath}/ventes/nouvelle" class="btn-action btn-success">
                             <i class="bi bi-plus-circle me-2"></i>Créer une vente
                         </a>
