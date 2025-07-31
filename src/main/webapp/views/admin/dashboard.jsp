@@ -185,7 +185,7 @@
                     <a class="nav-link" href="${pageContext.request.contextPath}/medicaments/">
                         <i class="fas fa-pills me-2"></i> Médicaments
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/ventes/">
                         <i class="fas fa-chart-line me-2"></i> Ventes
                     </a>
                     <a class="nav-link" href="${pageContext.request.contextPath}/alertes/">

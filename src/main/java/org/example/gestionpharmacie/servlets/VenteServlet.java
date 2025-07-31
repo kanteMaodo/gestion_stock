@@ -78,7 +78,7 @@ public class VenteServlet extends HttpServlet {
     private void handleListeVentes(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         try {
-            List<Vente> ventes = venteDAO.findAll();
+            List<Vente> ventes = venteDAO.findAllWithVendeur();
             request.setAttribute("ventes", ventes);
             request.getRequestDispatcher("/views/ventes/liste.jsp").forward(request, response);
         } catch (Exception e) {
@@ -103,6 +103,14 @@ public class VenteServlet extends HttpServlet {
             } catch (NumberFormatException e) {
                 // Ignorer l'erreur et créer une nouvelle vente
             }
+        } else {
+            // Créer une nouvelle vente automatiquement
+            HttpSession session = request.getSession();
+            Utilisateur user = (Utilisateur) session.getAttribute("utilisateur");
+            
+            Vente vente = new Vente(user);
+            venteDAO.save(vente);
+            request.setAttribute("vente", vente);
         }
         
         List<Medicament> medicaments = medicamentDAO.findAll();
@@ -121,7 +129,7 @@ public class VenteServlet extends HttpServlet {
         
         try {
             Long id = Long.parseLong(venteId);
-            Optional<Vente> venteOpt = venteDAO.findById(id);
+            Optional<Vente> venteOpt = venteDAO.findByIdWithDetails(id);
             
             if (venteOpt.isPresent()) {
                 request.setAttribute("vente", venteOpt.get());
@@ -161,7 +169,7 @@ public class VenteServlet extends HttpServlet {
             Long mId = Long.parseLong(medicamentId);
             Integer qte = Integer.parseInt(quantite);
             
-            Optional<Vente> venteOpt = venteDAO.findById(vId);
+            Optional<Vente> venteOpt = venteDAO.findByIdWithDetails(vId);
             Optional<Medicament> medicamentOpt = medicamentDAO.findById(mId);
             
             if (venteOpt.isPresent() && medicamentOpt.isPresent()) {
@@ -170,6 +178,7 @@ public class VenteServlet extends HttpServlet {
                 
                 if (medicament.getStock() >= qte) {
                     LigneVente ligne = new LigneVente(medicament, qte);
+                    ligne.calculerMontantLigne(); // S'assurer que le montant est calculé
                     vente.ajouterLigne(ligne);
                     venteDAO.save(vente);
                     
@@ -199,7 +208,7 @@ public class VenteServlet extends HttpServlet {
             Long vId = Long.parseLong(venteId);
             int index = Integer.parseInt(ligneIndex);
             
-            Optional<Vente> venteOpt = venteDAO.findById(vId);
+            Optional<Vente> venteOpt = venteDAO.findByIdWithDetails(vId);
             
             if (venteOpt.isPresent()) {
                 Vente vente = venteOpt.get();
@@ -227,7 +236,7 @@ public class VenteServlet extends HttpServlet {
         
         try {
             Long vId = Long.parseLong(venteId);
-            Optional<Vente> venteOpt = venteDAO.findById(vId);
+            Optional<Vente> venteOpt = venteDAO.findByIdWithDetails(vId);
             
             if (venteOpt.isPresent()) {
                 Vente vente = venteOpt.get();

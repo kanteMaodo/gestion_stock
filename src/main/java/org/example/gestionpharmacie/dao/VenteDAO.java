@@ -3,6 +3,7 @@ package org.example.gestionpharmacie.dao;
 import org.example.gestionpharmacie.model.Vente;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface VenteDAO extends GenericDAO<Vente, Long> {
     
@@ -45,4 +46,14 @@ public interface VenteDAO extends GenericDAO<Vente, Long> {
      * Trouve les ventes avec un montant supérieur à un seuil
      */
     List<Vente> findByMontantSuperieur(double seuil);
+    
+    /**
+     * Trouve toutes les ventes avec les vendeurs chargés (JOIN FETCH)
+     */
+    List<Vente> findAllWithVendeur();
+    
+    /**
+     * Trouve une vente par ID avec tous ses détails chargés (JOIN FETCH)
+     */
+    Optional<Vente> findByIdWithDetails(Long id);
 } 

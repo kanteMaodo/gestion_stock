@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDAO {
     
@@ -37,7 +38,7 @@ public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDA
         EntityManager em = emf.createEntityManager();
         try {
             TypedQuery<Vente> query = em.createQuery(
-                "SELECT v FROM Vente v JOIN FETCH v.utilisateur ORDER BY v.dateVente DESC",
+                "SELECT v FROM Vente v JOIN FETCH v.vendeur ORDER BY v.dateVente DESC",
                 Vente.class
             );
             query.setMaxResults(limit);
@@ -71,7 +72,7 @@ public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDA
         EntityManager em = emf.createEntityManager();
         try {
             TypedQuery<Vente> query = em.createQuery(
-                "SELECT v FROM Vente v WHERE v.utilisateur.id = :utilisateurId ORDER BY v.dateVente DESC",
+                "SELECT v FROM Vente v WHERE v.vendeur.id = :utilisateurId ORDER BY v.dateVente DESC",
                 Vente.class
             );
             query.setParameter("utilisateurId", utilisateurId);
@@ -108,7 +109,7 @@ public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDA
             LocalDateTime finJour = date.atTime(23, 59, 59);
             
             TypedQuery<Double> query = em.createQuery(
-                "SELECT COALESCE(SUM(v.montantTotal), 0) FROM Vente v WHERE v.dateVente BETWEEN :debutJour AND :finJour",
+                "SELECT COALESCE(SUM(v.montantTotal), 0.0) FROM Vente v WHERE v.dateVente BETWEEN :debutJour AND :finJour",
                 Double.class
             );
             query.setParameter("debutJour", debutJour);
@@ -128,7 +129,7 @@ public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDA
             LocalDateTime fin = dateFin.atTime(23, 59, 59);
             
             TypedQuery<Double> query = em.createQuery(
-                "SELECT COALESCE(SUM(v.montantTotal), 0) FROM Vente v WHERE v.dateVente BETWEEN :debut AND :fin",
+                "SELECT COALESCE(SUM(v.montantTotal), 0.0) FROM Vente v WHERE v.dateVente BETWEEN :debut AND :fin",
                 Double.class
             );
             query.setParameter("debut", debut);
@@ -148,8 +149,41 @@ public class VenteDAOImpl extends GenericDAOImpl<Vente, Long> implements VenteDA
                 "SELECT v FROM Vente v WHERE v.montantTotal > :seuil ORDER BY v.montantTotal DESC",
                 Vente.class
             );
-            query.setParameter("seuil", BigDecimal.valueOf(seuil));
+            query.setParameter("seuil", seuil);
             return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public List<Vente> findAllWithVendeur() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<Vente> query = em.createQuery(
+                "SELECT v FROM Vente v JOIN FETCH v.vendeur ORDER BY v.dateVente DESC",
+                Vente.class
+            );
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public Optional<Vente> findByIdWithDetails(Long id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<Vente> query = em.createQuery(
+                "SELECT v FROM Vente v " +
+                "JOIN FETCH v.vendeur " +
+                "LEFT JOIN FETCH v.lignesVente l " +
+                "LEFT JOIN FETCH l.medicament " +
+                "WHERE v.id = :id",
+                Vente.class
+            );
+            query.setParameter("id", id);
+            return query.getResultList().stream().findFirst();
         } finally {
             em.close();
         }

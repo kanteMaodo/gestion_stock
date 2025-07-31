@@ -24,6 +24,9 @@ public class LigneVente {
     @Column(name = "prix_unitaire", nullable = false)
     private Double prixUnitaire;
     
+    @Column(name = "montant_ligne", nullable = false)
+    private Double montantLigne;
+    
     // Constructeurs
     public LigneVente() {}
     
@@ -31,11 +34,18 @@ public class LigneVente {
         this.medicament = medicament;
         this.quantite = quantite;
         this.prixUnitaire = medicament.getPrix().doubleValue();
+        this.montantLigne = this.prixUnitaire * this.quantite;
     }
     
     // Méthodes métier
     public Double getMontantLigne() {
-        return quantite * prixUnitaire;
+        return montantLigne;
+    }
+    
+    public void calculerMontantLigne() {
+        if (prixUnitaire != null && quantite != null) {
+            this.montantLigne = prixUnitaire * quantite;
+        }
     }
     
     public boolean validerStock() {
@@ -53,8 +63,16 @@ public class LigneVente {
     public void setMedicament(Medicament medicament) { this.medicament = medicament; }
     
     public Integer getQuantite() { return quantite; }
-    public void setQuantite(Integer quantite) { this.quantite = quantite; }
+    public void setQuantite(Integer quantite) { 
+        this.quantite = quantite; 
+        calculerMontantLigne();
+    }
     
     public Double getPrixUnitaire() { return prixUnitaire; }
-    public void setPrixUnitaire(Double prixUnitaire) { this.prixUnitaire = prixUnitaire; }
+    public void setPrixUnitaire(Double prixUnitaire) { 
+        this.prixUnitaire = prixUnitaire; 
+        calculerMontantLigne();
+    }
+    
+    public void setMontantLigne(Double montantLigne) { this.montantLigne = montantLigne; }
 } 
