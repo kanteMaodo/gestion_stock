@@ -220,10 +220,8 @@ public class MedicamentDAOImpl extends GenericDAOImpl<Medicament, Long> implemen
             
             List<Predicate> predicates = new ArrayList<>();
             
-            // Toujours filtrer par actif = true
             predicates.add(cb.equal(root.get("actif"), true));
             
-            // Filtres optionnels
             if (nom != null && !nom.trim().isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("nom")), "%" + nom.toLowerCase() + "%"));
             }

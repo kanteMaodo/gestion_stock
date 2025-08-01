@@ -4,11 +4,7 @@ import jakarta.persistence.*;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implémentation générique des opérations CRUD de base
- * @param <T> Le type d'entité
- * @param <ID> Le type de l'identifiant
- */
+
 public abstract class GenericDAOImpl<T, ID> implements GenericDAO<T, ID> {
     
     protected final EntityManagerFactory emf;

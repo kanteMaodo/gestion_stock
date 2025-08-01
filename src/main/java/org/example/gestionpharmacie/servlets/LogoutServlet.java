@@ -19,11 +19,9 @@ public class LogoutServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         
         if (session != null) {
-            // Invalider la session
             session.invalidate();
         }
         
-        // Rediriger vers la page d'authentification
         response.sendRedirect(request.getContextPath() + "/auth");
     }
     

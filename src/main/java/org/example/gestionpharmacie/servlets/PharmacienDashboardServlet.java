@@ -38,24 +38,20 @@ public class PharmacienDashboardServlet extends HttpServlet {
             return;
         }
         
-        // Vérifier que l'utilisateur est pharmacien
         if (user.getRole() != Utilisateur.Role.PHARMACIEN) {
             response.sendRedirect(request.getContextPath() + "/unauthorized");
             return;
         }
         
         try {
-            // Créer les données du dashboard
             Map<String, Object> dashboardData = getDashboardData();
             
-            // Ajouter les données à la requête
             request.setAttribute("dashboardData", dashboardData);
             request.setAttribute("user", user);
             
             request.getRequestDispatcher("/views/pharmacien/dashboard.jsp").forward(request, response);
             
         } catch (Exception e) {
-            // En cas d'erreur, créer des données par défaut
             Map<String, Object> defaultData = createDefaultDashboardData();
             request.setAttribute("dashboardData", defaultData);
             request.setAttribute("user", user);
@@ -68,20 +64,16 @@ public class PharmacienDashboardServlet extends HttpServlet {
         Map<String, Object> data = new HashMap<>();
         
         try {
-            // Statistiques globales (sans utilisateurs)
             data.put("totalMedicaments", medicamentDAO.count());
             data.put("totalVentes", venteDAO.countVentesByDate(LocalDate.now()));
             data.put("chiffreAffaires", venteDAO.getChiffreAffairesByDate(LocalDate.now()));
             
-            // Alertes
             data.put("medicamentsStockFaible", medicamentDAO.findStockFaible());
             data.put("medicamentsExpiration", medicamentDAO.findExpirationProche());
             
-            // Données récentes
             data.put("ventesRecentes", venteDAO.findVentesRecentes(10));
             
         } catch (Exception e) {
-            // En cas d'erreur, utiliser des valeurs par défaut
             data = createDefaultDashboardData();
         }
         

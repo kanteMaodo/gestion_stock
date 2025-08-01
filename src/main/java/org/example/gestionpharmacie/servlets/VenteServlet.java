@@ -92,7 +92,6 @@ public class VenteServlet extends HttpServlet {
         String venteId = request.getParameter("venteId");
         
         if (venteId != null && !venteId.trim().isEmpty()) {
-            // Continuer une vente existante
             try {
                 Long id = Long.parseLong(venteId);
                 Optional<Vente> venteOpt = venteDAO.findById(id);
@@ -101,10 +100,8 @@ public class VenteServlet extends HttpServlet {
                     request.setAttribute("vente", vente);
                 }
             } catch (NumberFormatException e) {
-                // Ignorer l'erreur et créer une nouvelle vente
             }
         } else {
-            // Créer une nouvelle vente automatiquement
             HttpSession session = request.getSession();
             Utilisateur user = (Utilisateur) session.getAttribute("utilisateur");
             

@@ -36,24 +36,19 @@ public class MedicamentServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
         
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.equals("")) {
-            // Vérifier s'il y a des paramètres d'action
             String action = request.getParameter("action");
             if ("supprimer".equals(action)) {
                 handleSupprimerMedicament(request, response, user);
             } else if ("modifier".equals(action)) {
                 handleFormulaireModifier(request, response, user);
             } else {
-                // Liste des médicaments
                 handleListeMedicaments(request, response, user);
             }
         } else if (pathInfo.equals("/ajouter")) {
-            // Formulaire d'ajout
             handleFormulaireAjout(request, response, user);
         } else if (pathInfo.equals("/modifier")) {
-            // Formulaire de modification
             handleFormulaireModifier(request, response, user);
         } else if (pathInfo.startsWith("/api/")) {
-            // Requêtes API
             handleApiRequest(request, response, user);
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -134,7 +129,6 @@ public class MedicamentServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            // Récupérer les données du formulaire
             String nom = request.getParameter("nom");
             String description = request.getParameter("description");
             BigDecimal prix = new BigDecimal(request.getParameter("prix"));
@@ -144,13 +138,11 @@ public class MedicamentServlet extends HttpServlet {
             String categorie = request.getParameter("categorie");
             String fabricant = request.getParameter("fabricant");
             
-            // Parser la date d'expiration
             LocalDate dateExpiration = null;
             if (request.getParameter("dateExpiration") != null && !request.getParameter("dateExpiration").isEmpty()) {
                 dateExpiration = LocalDate.parse(request.getParameter("dateExpiration"));
             }
             
-            // Créer le médicament
             Medicament medicament = new Medicament();
             medicament.setNom(nom);
             medicament.setDescription(description);
@@ -163,10 +155,9 @@ public class MedicamentServlet extends HttpServlet {
             medicament.setDateExpiration(dateExpiration);
             medicament.setActif(true);
             
-            // Sauvegarder
+
             medicamentDAO.save(medicament);
             
-            // Rediriger avec un message de succès
             response.sendRedirect(request.getContextPath() + "/medicaments/?success=Medicament ajoute avec succes");
             
         } catch (NumberFormatException e) {
@@ -190,7 +181,6 @@ public class MedicamentServlet extends HttpServlet {
                 return;
             }
             
-            // Mettre à jour les données
             medicament.setNom(request.getParameter("nom"));
             medicament.setDescription(request.getParameter("description"));
             medicament.setPrix(new BigDecimal(request.getParameter("prix")));
@@ -204,10 +194,8 @@ public class MedicamentServlet extends HttpServlet {
                 medicament.setDateExpiration(LocalDate.parse(request.getParameter("dateExpiration")));
             }
             
-            // Sauvegarder
             medicamentDAO.save(medicament);
             
-            // Vérifier le paramètre retour pour la redirection
             String retour = request.getParameter("retour");
             if ("alertes".equals(retour)) {
                 response.sendRedirect(request.getContextPath() + "/alertes/?success=Medicament modifie avec succes");
@@ -231,7 +219,6 @@ public class MedicamentServlet extends HttpServlet {
         try {
             Long medicamentId = Long.parseLong(request.getParameter("id"));
             
-            // Supprimer logiquement (désactiver)
             Medicament medicament = medicamentDAO.findById(medicamentId).orElse(null);
             if (medicament != null) {
                 medicament.setActif(false);
@@ -268,7 +255,7 @@ public class MedicamentServlet extends HttpServlet {
                     disponible = Boolean.parseBoolean(request.getParameter("disponible"));
                 }
             } catch (NumberFormatException e) {
-                //
+
             }
             
             List<Medicament> medicaments = medicamentDAO.rechercheAvancee(nom, categorie, fabricant, minPrix, maxPrix, disponible);
@@ -297,13 +284,11 @@ public class MedicamentServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
         
         if (pathInfo.equals("/api/stock-faible")) {
-            // API pour récupérer les médicaments en stock faible
             List<Medicament> stockFaible = medicamentDAO.findStockFaible();
             request.setAttribute("medicaments", stockFaible);
             request.getRequestDispatcher("/views/medicaments/api/stock-faible.jsp").forward(request, response);
             
         } else if (pathInfo.equals("/api/expiration-proche")) {
-            // API pour récupérer les médicaments qui expirent bientôt
             List<Medicament> expirationProche = medicamentDAO.findExpirationProche();
             request.setAttribute("medicaments", expirationProche);
             request.getRequestDispatcher("/views/medicaments/api/expiration-proche.jsp").forward(request, response);

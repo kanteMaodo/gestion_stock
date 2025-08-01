@@ -22,25 +22,27 @@
             <div class="col-md-3 col-lg-2 bg-success text-white min-vh-100 p-0">
                 <div class="p-3">
                     <h4 class="text-white mb-4">
-                        <i class="fas fa-clinic-medical me-2"></i>
                         PHARMACIE
                     </h4>
                 </div>
                 <nav class="nav flex-column">
                     <a class="nav-link text-white-50 active" href="#">
-                        <i class="fas fa-tachometer-alt me-2"></i> Tableau de bord
+                        Tableau de bord
+                    </a>
+                    <a class="nav-link text-white-50" href="#">
+                        Utilisateurs
                     </a>
                     <a class="nav-link text-white-50" href="${pageContext.request.contextPath}/medicaments/">
-                        <i class="fas fa-pills me-2"></i> Médicaments
+                        Médicaments
                     </a>
                     <a class="nav-link text-white-50" href="${pageContext.request.contextPath}/ventes/">
-                        <i class="fas fa-chart-line me-2"></i> Ventes
+                        Ventes
                     </a>
                     <a class="nav-link text-white-50" href="${pageContext.request.contextPath}/alertes/">
-                        <i class="fas fa-exclamation-triangle me-2"></i> Alertes
+                        Alertes
                     </a>
                     <a class="nav-link text-white-50" href="${pageContext.request.contextPath}/logout">
-                        <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
+                        Déconnexion
                     </a>
                 </nav>
             </div>
@@ -70,9 +72,6 @@
                     <div class="col-md-3">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body text-center">
-                                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                    <i class="fas fa-users text-white fs-4"></i>
-                                </div>
                                 <h3 class="fw-bold mb-1"><%= dashboardData.get("totalUtilisateurs") %></h3>
                                 <p class="text-muted mb-0">Utilisateurs Actifs</p>
                             </div>
@@ -81,9 +80,6 @@
                     <div class="col-md-3">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body text-center">
-                                <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                    <i class="fas fa-pills text-white fs-4"></i>
-                                </div>
                                 <h3 class="fw-bold mb-1"><%= dashboardData.get("totalMedicaments") %></h3>
                                 <p class="text-muted mb-0">Médicaments</p>
                             </div>
@@ -92,9 +88,6 @@
                     <div class="col-md-3">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body text-center">
-                                <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                    <i class="fas fa-shopping-cart text-white fs-4"></i>
-                                </div>
                                 <h3 class="fw-bold mb-1"><%= dashboardData.get("totalVentes") %></h3>
                                 <p class="text-muted mb-0">Ventes Aujourd'hui</p>
                             </div>
@@ -103,9 +96,6 @@
                     <div class="col-md-3">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body text-center">
-                                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                    <i class="fas fa-money-bill-wave text-white fs-4"></i>
-                                </div>
                                 <h3 class="fw-bold mb-1"><%= String.format("%.0f", dashboardData.get("chiffreAffaires")) %> FCFA</h3>
                                 <p class="text-muted mb-0">Chiffre d'Affaires</p>
                             </div>
@@ -118,7 +108,6 @@
                     <div class="col-md-6 mb-4">
                         <div class="card border-0 shadow-sm">
                             <div class="card-header bg-warning text-dark d-flex align-items-center">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
                                 <h5 class="mb-0">Stock Faible</h5>
                             </div>
                             <div class="card-body p-0">
@@ -155,7 +144,6 @@
                     <div class="col-md-6 mb-4">
                         <div class="card border-0 shadow-sm">
                             <div class="card-header bg-danger text-white d-flex align-items-center">
-                                <i class="fas fa-calendar-times me-2"></i>
                                 <h5 class="mb-0">Expiration Proche</h5>
                             </div>
                             <div class="card-body p-0">
@@ -194,7 +182,6 @@
                     <div class="col-12">
                         <div class="card border-0 shadow-sm">
                             <div class="card-header bg-info text-white d-flex align-items-center">
-                                <i class="fas fa-chart-line me-2"></i>
                                 <h5 class="mb-0">Ventes Récentes</h5>
                             </div>
                             <div class="card-body p-0">

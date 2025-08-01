@@ -27,7 +27,6 @@ public class LigneVente {
     @Column(name = "montant_ligne", nullable = false)
     private Double montantLigne;
     
-    // Constructeurs
     public LigneVente() {}
     
     public LigneVente(Medicament medicament, Integer quantite) {
@@ -37,7 +36,6 @@ public class LigneVente {
         this.montantLigne = this.prixUnitaire * this.quantite;
     }
     
-    // Méthodes métier
     public Double getMontantLigne() {
         return montantLigne;
     }
@@ -52,7 +50,6 @@ public class LigneVente {
         return medicament != null && medicament.getStock() >= quantite;
     }
     
-    // Getters et Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     

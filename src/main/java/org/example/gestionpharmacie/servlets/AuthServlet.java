@@ -72,7 +72,6 @@ public class AuthServlet extends HttpServlet {
         String motDePasse = req.getParameter("motDePasse");
         String roleStr = req.getParameter("role");
         
-        // Séparation du champ "Nom et Prénom"
         String nom = "";
         String prenom = "";
         if (nomPrenom != null && !nomPrenom.trim().isEmpty()) {
@@ -84,14 +83,12 @@ public class AuthServlet extends HttpServlet {
         }
         
         try {
-            // Vérifier si l'email existe déjà
             if (utilisateurDAO.emailExists(email)) {
                 req.setAttribute("registerError", "Email déjà utilisé !");
                 req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
                 return;
             }
             
-            // Créer et enregistrer l'utilisateur
             Utilisateur utilisateur = new Utilisateur(
                     nom, prenom, email, email, motDePasse, Utilisateur.Role.valueOf(roleStr)
             );

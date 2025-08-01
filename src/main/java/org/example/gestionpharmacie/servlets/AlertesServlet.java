@@ -21,7 +21,6 @@ public class AlertesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // Vérifier l'authentification
         Utilisateur user = (Utilisateur) request.getSession().getAttribute("utilisateur");
         if (user == null) {
             response.sendRedirect(request.getContextPath() + "/auth");
@@ -29,14 +28,11 @@ public class AlertesServlet extends HttpServlet {
         }
 
         try {
-            // Charger toutes les alertes en une seule fois
             Map<String, Object> alertes = chargerAlertes();
             
-            // Ajouter les données à la requête
             request.setAttribute("alertes", alertes);
             request.setAttribute("user", user);
             
-            // Afficher la page
             request.getRequestDispatcher("/views/alertes.jsp").forward(request, response);
             
         } catch (Exception e) {
@@ -48,17 +44,14 @@ public class AlertesServlet extends HttpServlet {
     private Map<String, Object> chargerAlertes() {
         Map<String, Object> alertes = new HashMap<>();
         
-        // Charger les médicaments en stock faible
         List<Medicament> stockFaible = medicamentDAO.findStockFaible();
         alertes.put("stockFaible", stockFaible);
         alertes.put("countStockFaible", stockFaible.size());
         
-        // Charger les médicaments proche expiration
         List<Medicament> expirationProche = medicamentDAO.findExpirationProche();
         alertes.put("expirationProche", expirationProche);
         alertes.put("countExpirationProche", expirationProche.size());
         
-        // Calculer les statistiques
         long totalMedicaments = medicamentDAO.count();
         long medicamentsDisponibles = medicamentDAO.countDisponibles();
         

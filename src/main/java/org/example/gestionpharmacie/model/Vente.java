@@ -36,7 +36,6 @@ public class Vente {
     @Column(name = "date_creation", nullable = false)
     private LocalDateTime dateCreation = LocalDateTime.now();
     
-    // Constructeurs
     public Vente() {}
     
     public Vente(Utilisateur vendeur) {
@@ -45,7 +44,6 @@ public class Vente {
         this.dateCreation = LocalDateTime.now();
     }
     
-    // Énumération pour le statut
     public enum StatutVente {
         EN_COURS("En cours"),
         COMPLETEE("Complétée"),
@@ -62,7 +60,6 @@ public class Vente {
         }
     }
     
-    // Méthodes métier
     public void ajouterLigne(LigneVente ligne) {
         lignesVente.add(ligne);
         ligne.setVente(this);
@@ -105,14 +102,12 @@ public class Vente {
     
     public void finaliser() {
         if (statut == StatutVente.EN_COURS && !lignesVente.isEmpty()) {
-            // Vérifier les stocks
             for (LigneVente ligne : lignesVente) {
                 if (!ligne.validerStock()) {
                     throw new IllegalStateException("Stock insuffisant pour " + ligne.getMedicament().getNom());
                 }
             }
             
-            // Déduire les stocks
             for (LigneVente ligne : lignesVente) {
                 ligne.getMedicament().decrementerStock(ligne.getQuantite());
             }
@@ -122,7 +117,6 @@ public class Vente {
         }
     }
     
-    // Getters et Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     

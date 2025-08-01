@@ -47,7 +47,6 @@ public class AdminDashboardServlet extends HttpServlet {
             return;
         }
         
-        // Vérifier que l'utilisateur est admin
         if (user.getRole() != Utilisateur.Role.ADMIN) {
             System.out.println("Redirection vers /unauthorized - rôle: " + user.getRole());
             response.sendRedirect(request.getContextPath() + "/unauthorized");
@@ -57,11 +56,9 @@ public class AdminDashboardServlet extends HttpServlet {
         System.out.println("Utilisateur admin détecté, récupération des données...");
         
         try {
-            // Créer les données du dashboard
             Map<String, Object> dashboardData = getDashboardData();
             System.out.println("Données du dashboard récupérées avec succès");
             
-            // Ajouter les données à la requête
             request.setAttribute("dashboardData", dashboardData);
             request.setAttribute("user", user);
             
@@ -72,7 +69,6 @@ public class AdminDashboardServlet extends HttpServlet {
             System.err.println("ERREUR dans AdminDashboardServlet: " + e.getMessage());
             e.printStackTrace();
             
-            // En cas d'erreur, créer des données par défaut
             Map<String, Object> defaultData = createDefaultDashboardData();
             request.setAttribute("dashboardData", defaultData);
             request.setAttribute("user", user);
@@ -91,7 +87,6 @@ public class AdminDashboardServlet extends HttpServlet {
         try {
             System.out.println("Récupération des statistiques globales...");
             
-            // Statistiques globales
             long totalUtilisateurs = utilisateurDAO.countActifs();
             System.out.println("Total utilisateurs: " + totalUtilisateurs);
             data.put("totalUtilisateurs", totalUtilisateurs);
@@ -110,7 +105,6 @@ public class AdminDashboardServlet extends HttpServlet {
             
             System.out.println("Récupération des alertes...");
             
-            // Alertes
             List<Medicament> stockFaible = medicamentDAO.findStockFaible();
             System.out.println("Médicaments stock faible: " + stockFaible.size());
             data.put("medicamentsStockFaible", stockFaible);
@@ -121,7 +115,6 @@ public class AdminDashboardServlet extends HttpServlet {
             
             System.out.println("Récupération des données récentes...");
             
-            // Données récentes
             List<Utilisateur> utilisateursRecents = utilisateurDAO.findActifs();
             System.out.println("Utilisateurs récents: " + utilisateursRecents.size());
             data.put("utilisateursRecents", utilisateursRecents);
@@ -135,7 +128,6 @@ public class AdminDashboardServlet extends HttpServlet {
         } catch (Exception e) {
             System.err.println("ERREUR dans getDashboardData(): " + e.getMessage());
             e.printStackTrace();
-            // En cas d'erreur, utiliser des valeurs par défaut
             data = createDefaultDashboardData();
         }
         

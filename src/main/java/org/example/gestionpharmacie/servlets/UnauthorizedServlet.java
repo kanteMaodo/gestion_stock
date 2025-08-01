@@ -9,9 +9,6 @@ import jakarta.servlet.http.HttpSession;
 import org.example.gestionpharmacie.model.Utilisateur;
 import java.io.IOException;
 
-/**
- * Servlet pour gérer les accès non autorisés
- */
 @WebServlet(name = "unauthorizedServlet", value = "/unauthorized")
 public class UnauthorizedServlet extends HttpServlet {
 

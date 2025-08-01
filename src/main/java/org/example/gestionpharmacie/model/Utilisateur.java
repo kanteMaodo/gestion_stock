@@ -4,9 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/**
- * Entité JPA représentant un utilisateur du système de gestion de pharmacie
- */
+
 @Entity
 @Table(name = "utilisateurs")
 public class Utilisateur implements Serializable {
@@ -65,7 +63,6 @@ public class Utilisateur implements Serializable {
         }
     }
 
-    // Constructeurs
     public Utilisateur() {
         this.dateCreation = LocalDateTime.now();
         this.actif = true;
@@ -92,7 +89,6 @@ public class Utilisateur implements Serializable {
         this.dateModification = LocalDateTime.now();
     }
 
-    // Getters et Setters
     public Long getId() {
         return id;
     }

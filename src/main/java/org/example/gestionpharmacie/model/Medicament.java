@@ -87,7 +87,6 @@ public class Medicament {
         this.stock += quantite;
     }
     
-    // Callbacks JPA
     @PrePersist
     protected void onCreate() {
         dateCreation = LocalDateTime.now();
@@ -101,7 +100,6 @@ public class Medicament {
         dateModification = LocalDateTime.now();
     }
     
-    // Getters et Setters
     public Long getId() {
         return id;
     }
