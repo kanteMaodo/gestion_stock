@@ -6,6 +6,7 @@ import jakarta.servlet.http.*;
 import org.example.gestionpharmacie.dao.UtilisateurDAO;
 import org.example.gestionpharmacie.dao.UtilisateurDAOImpl;
 import org.example.gestionpharmacie.model.Utilisateur;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -36,10 +37,15 @@ public class AuthServlet extends HttpServlet {
         String motDePasse = req.getParameter("motDePasse");
         
         try {
-            Optional<Utilisateur> utilisateurOpt = utilisateurDAO.authenticate(email, motDePasse);
+			Optional<Utilisateur> utilisateurOpt = utilisateurDAO.authenticate(email, motDePasse);
             
             if (utilisateurOpt.isPresent()) {
-                Utilisateur utilisateur = utilisateurOpt.get();
+				Utilisateur utilisateur = utilisateurOpt.get();
+				if (!BCrypt.checkpw(motDePasse, utilisateur.getMotDePasse())) {
+					req.setAttribute("loginError", "Email ou mot de passe incorrect !");
+					req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
+					return;
+				}
                 HttpSession session = req.getSession();
                 session.setAttribute("utilisateur", utilisateur);
                 
@@ -67,31 +73,29 @@ public class AuthServlet extends HttpServlet {
     }
 
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String nomPrenom = req.getParameter("nomPrenom");
-        String email = req.getParameter("email");
-        String motDePasse = req.getParameter("motDePasse");
-        String roleStr = req.getParameter("role");
-        
-        String nom = "";
-        String prenom = "";
-        if (nomPrenom != null && !nomPrenom.trim().isEmpty()) {
-            String[] parts = nomPrenom.trim().split("\\s+", 2);
-            nom = parts[0];
-            if (parts.length > 1) {
-                prenom = parts[1];
-            }
-        }
+		String nom = req.getParameter("nom");
+		String prenom = req.getParameter("prenom");
+		String email = req.getParameter("email");
+		String login = req.getParameter("login");
+		String motDePasse = req.getParameter("motDePasse");
+		String roleStr = req.getParameter("role");
         
         try {
-            if (utilisateurDAO.emailExists(email)) {
+			if (utilisateurDAO.emailExists(email)) {
                 req.setAttribute("registerError", "Email déjà utilisé !");
                 req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
                 return;
             }
+			if (utilisateurDAO.loginExists(login)) {
+				req.setAttribute("registerError", "Login déjà utilisé !");
+				req.getRequestDispatcher("/views/auth.jsp").forward(req, resp);
+				return;
+			}
             
-            Utilisateur utilisateur = new Utilisateur(
-                    nom, prenom, email, email, motDePasse, Utilisateur.Role.valueOf(roleStr)
-            );
+			String hashed = BCrypt.hashpw(motDePasse, BCrypt.gensalt());
+			Utilisateur utilisateur = new Utilisateur(
+					nom, prenom, email, login, hashed, Utilisateur.Role.valueOf(roleStr)
+			);
             utilisateurDAO.save(utilisateur);
             
             req.setAttribute("registerSuccess", "Compte créé avec succès ! Vous pouvez maintenant vous connecter.");

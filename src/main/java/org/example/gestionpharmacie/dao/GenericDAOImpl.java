@@ -100,7 +100,7 @@ public abstract class GenericDAOImpl<T, ID> implements GenericDAO<T, ID> {
     
     @Override
     public long count() {
-        EntityManager em = emf.createEntityManager();
+		EntityManager em = emf.createEntityManager();
         try {
             TypedQuery<Long> query = em.createQuery(
                 "SELECT COUNT(e) FROM " + entityClass.getSimpleName() + " e", Long.class

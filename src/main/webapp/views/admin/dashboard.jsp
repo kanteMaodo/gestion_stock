@@ -29,7 +29,7 @@
                     <a class="nav-link text-white-50 active" href="#">
                         Tableau de bord
                     </a>
-                    <a class="nav-link text-white-50" href="${pageContext.request.contextPath}/utilisateurs/">
+                    <a class="nav-link text-white-50" href="#">
                         Utilisateurs
                     </a>
                     <a class="nav-link text-white-50" href="${pageContext.request.contextPath}/medicaments/">

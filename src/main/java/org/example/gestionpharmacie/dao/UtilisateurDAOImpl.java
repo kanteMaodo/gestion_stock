@@ -13,7 +13,7 @@ public class UtilisateurDAOImpl extends GenericDAOImpl<Utilisateur, Long> implem
     
     @Override
     public Optional<Utilisateur> findByEmail(String email) {
-        EntityManager em = emf.createEntityManager();
+		EntityManager em = emf.createEntityManager();
         try {
             TypedQuery<Utilisateur> query = em.createQuery(
                 "SELECT u FROM Utilisateur u WHERE u.email = :email", Utilisateur.class
@@ -99,12 +99,12 @@ public class UtilisateurDAOImpl extends GenericDAOImpl<Utilisateur, Long> implem
         EntityManager em = emf.createEntityManager();
         try {
             TypedQuery<Utilisateur> query = em.createQuery(
-                "SELECT u FROM Utilisateur u WHERE u.email = :email AND u.motDePasse = :motDePasse AND u.actif = true", 
+                "SELECT u FROM Utilisateur u WHERE u.email = :email AND u.actif = true",
                 Utilisateur.class
             );
             query.setParameter("email", email);
-            query.setParameter("motDePasse", motDePasse);
-            return query.getResultStream().findFirst();
+            Optional<Utilisateur> userOpt = query.getResultStream().findFirst();
+            return userOpt;
         } finally {
             em.close();
         }
